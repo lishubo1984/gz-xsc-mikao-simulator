@@ -112,14 +112,20 @@ _SAFE_FUNCS = {
 
 
 def _trim(value: object) -> object:
-    """把整数值的 Fraction 还原成 int。
+    """把整数值的 Fraction / float 还原成 int。
 
     _Rat 让 "8/2" 算出 Fraction(2,1) 而不是 2；若原样留在 values 里，
     后续 "{expr} 米" 这类文本替换会带上分数语义，累乘还可能把分母越滚越大。
     统一在求值出口收口。
+
+    float 也要收口（真实踩坑）：_round 为了保证金额题不印成分数而强制转浮点，
+    于是派生参数 profit = round(c * 0.12, 2) 得到 24.0，题干就印成
+    "仍获利 24.0 元" —— 孩子看到的题面不该有这种机器味的小数尾巴。
     """
     if isinstance(value, Fraction) and value.denominator == 1:
         return value.numerator
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
     return value
 
 

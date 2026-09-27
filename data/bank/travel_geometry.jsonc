@@ -37,6 +37,8 @@
       "v1": {"type": "choice", "from": [60, 65, 70, 75, 80, 90]},
       "v2": {"type": "choice", "from": [45, 50, 55, 60, 70]}
     },
+    // 相遇时间 = 路程 ÷ 速度和，除不尽就出 "1.8 小时" 这类不整洁的答案。
+    "constraints": ["{dist} % ({v1} + {v2}) == 0"],
     "solution": "相遇问题的核心是速度和。两车同时相向而行，每小时一共前进 {v1} 加 {v2} 千米。相遇时间 = 总路程 ÷ 速度和。注意与追及问题形成对照：相遇用速度和，追及用速度差，两者不可混用。",
     "difficulty": 4,
     "unit": "小时"
@@ -183,13 +185,27 @@
     "knowledge_id": "composite_area",
     "slot": "geometry",
     "stem": "如下图，一个长方形（长 {l} 厘米，宽 {w} 厘米）内画了一个最大的圆。求圆外、长方形内阴影部分的面积。（π 取 3.14）",
-    "figure_svg": "<svg viewBox=\"0 0 300 190\" width=\"300\"><rect x=\"30\" y=\"25\" width=\"200\" height=\"100\" fill=\"#f0f0f0\" stroke=\"#000\" stroke-width=\"1\"/><circle cx=\"130\" cy=\"75\" r=\"50\" fill=\"#ffffff\" stroke=\"#c0392b\" stroke-width=\"1.2\"/><text x=\"118\" y=\"146\" font-size=\"11\" fill=\"#000\">30cm</text><text x=\"240\" y=\"80\" font-size=\"11\" fill=\"#000\">20cm</text></svg>",
+    // 图形尺寸随参数走：rh 是长方形在图中的高（按 长:宽 等比缩放），
+    // rad/cy 让圆正好内切于两条短边，标注文字也用 {l}/{w} 而不是写死数字。
+    // 真实踩坑：早期 SVG 里写死 "30cm"/"20cm"，题干却随机成 长50宽40，
+    // 孩子对着一张标注和题干对不上的图做题 —— 属于"图像与文字不一致"。
+    "figure_svg": "<svg viewBox=\"0 0 300 250\" width=\"300\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"40\" y=\"40\" width=\"200\" height=\"{rh}\" fill=\"#f0f0f0\" stroke=\"#000\" stroke-width=\"1.2\"/><circle cx=\"140\" cy=\"{cy}\" r=\"{rad}\" fill=\"#ffffff\" stroke=\"#c0392b\" stroke-width=\"1.2\"/><text x=\"118\" y=\"{bottom}\" font-size=\"12\" fill=\"#000\">{l}cm</text><text x=\"4\" y=\"{cylab}\" font-size=\"12\" fill=\"#000\">{w}cm</text></svg>",
     "answer_expr": "round({l} * {w} - 3.14 * ({w} / 2) ** 2, 2)",
     "answer_display": "{ans} 平方厘米",
     "params": {
       "l": {"type": "choice", "from": [30, 40, 50, 60]},
-      "w": {"type": "choice", "from": [20, 24, 30, 40]}
+      "w": {"type": "choice", "from": [20, 24, 30, 40]},
+      "rh": {"type": "expr", "expr": "200 * {w} // {l}"},
+      "rad": {"type": "expr", "expr": "(200 * {w} // {l}) // 2"},
+      "cy": {"type": "expr", "expr": "40 + (200 * {w} // {l}) // 2"},
+      "bottom": {"type": "expr", "expr": "40 + (200 * {w} // {l}) + 22"},
+      "cylab": {"type": "expr", "expr": "40 + (200 * {w} // {l}) // 2 + 4"}
     },
+    // 长方形内画最大的圆，直径只能等于较短的那条边（宽）。
+    // 真实踩坑（seed=20261002 第 33 题）：不加 {l} > {w} 时抽到 长30 / 宽40，
+    // 圆面积 3.14×20²=1256 反而大于长方形面积 30×40=1200，答案算出 -56 平方厘米。
+    // 面积为负在物理上不可能，必须在参数层就堵死，而不是等校验器事后报警。
+    "constraints": ["{l} > {w}"],
     "solution": "长方形内画最大的圆，圆的直径等于长方形的宽，所以半径是宽的一半。阴影面积用整体减部分：先用长乘宽求长方形面积，再用 π 乘半径的平方求圆面积，两者相减。这是组合图形最常用的割补思路。",
     "difficulty": 4,
     "unit": "平方厘米"

@@ -72,6 +72,8 @@ def load_bank(bank_dir: Path | None = None) -> list[dict]:
 
 _REQUIRED_FIELDS = {"id", "knowledge_id", "slot", "stem", "answer_expr"}
 _VALID_SLOTS = {"fill", "choice", "judge", "calc", "geometry", "solve", "extra"}
+# SVG 里写死的尺寸标注（形如 >30cm< / >20米<），有参数化题干时必须换成占位符
+_HARD_LABEL_RE = re.compile(r'>\s*\d+(?:\.\d+)?\s*(?:cm|dm|km|m|厘米|分米|千米|米)\s*<')
 
 
 # 由代码自动注入、不需要模板作者声明的变量
@@ -127,6 +129,13 @@ def validate_template_safe(item: dict, fname: str) -> list[str]:
         errs.append("choices_expr 必须是 JSON 数组，不能是字符串")
     if item.get("figure_svg") and not re.search(r'viewBox\s*=\s*"', item["figure_svg"]):
         errs.append("figure_svg 缺少 viewBox，打印时会被裁切")
+    # 真实踩坑：gm_composite_01 的 SVG 里写死 ">30cm<" ">20cm<"，
+    # 题干却随机成 长50 宽40 —— 图注和题干对不上，孩子没法做题。
+    # 题干只要带参数，图里的尺寸标注就必须用占位符跟着变。
+    if item.get("figure_svg") and item.get("params"):
+        if _HARD_LABEL_RE.search(item["figure_svg"]):
+            errs.append("figure_svg 里有写死的尺寸标注（如 >30cm<），"
+                        "题干参数一变图注就对不上，请改成 {l}cm 这类占位符")
     errs.extend(f"{n}" for n in _validate_placeholders_safe(item, fname))
     return [f"<{tid}> {e}" if not e.startswith("<") else e for e in errs]
 

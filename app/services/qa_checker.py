@@ -169,6 +169,27 @@ def check_proper_fraction(text: str, where: str, seq: int, rep: CheckReport,
                     f"{where} 问的是几分之几，却出现假分数 [[{frag}]]", seq)
 
 
+# 答案里带符号的数字前缀，如 "-56 平方厘米" -> -56.0、"10700 元" -> 10700.0。
+# 用正则而不是 float()：float 遇到单位后缀一律 ValueError，
+# 早期就是靠 except: pass 把负数答案放过去的。
+_LEADING_NUM_RE = re.compile(r"[-+]?\d+(?:\.\d+)?")
+
+
+def _leading_number(text: str) -> float | None:
+    """取答案开头的数值（允许后面跟单位、汉字），取不到返回 None。
+
+    只认"开头"是有意的：像 "x = 14"、"3 时 20 分" 这类复合答案不该被误判成
+    单个数值去做负数/整数检查，否则会刷出一堆假警报。
+    """
+    m = _LEADING_NUM_RE.match(text.lstrip())
+    if not m:
+        return None
+    try:
+        return float(m.group())
+    except ValueError:
+        return None
+
+
 def check_answer_domain(answer: str, module: str, unit: str | None,
                          seq: int, rep: CheckReport) -> None:
     """答案值域合理性：人数/棵树/个数必须为正整数，百分率不超 100%。"""
@@ -185,15 +206,19 @@ def check_answer_domain(answer: str, module: str, unit: str | None,
         if parts[1] == "0":
             rep.add("ERROR", "ANSWER_DIV_ZERO", f"答案分母为 0：{txt}", seq)
     else:
-        try:
-            val = float(txt)
+        # 真实踩坑：答案几乎总是带着单位（"-56 平方厘米"、"10700 元"），
+        # 直接 float(txt) 必然 ValueError，被 except 吞掉后负数检查形同虚设 ——
+        # seed=20261002 第 33 题的 -56 平方厘米就是这样一路漏到卷面上的。
+        # 所以先把带符号的数字前缀抠出来再判值域。
+        val = _leading_number(txt)
+        if val is None:
+            pass
+        else:
             if val < 0:
                 rep.add("ERROR", "ANSWER_NEGATIVE", f"答案出现负数：{txt}", seq)
             if unit in ("本", "人", "棵", "个", "种", "天", "小时", "分") and val != int(val):
                 rep.add("WARN", "ANSWER_NOT_INTEGER",
                         f"答案应为整数但为 {txt}（单位 {unit}）", seq)
-        except ValueError:
-            pass
 
     if unit == "%":
         try:
