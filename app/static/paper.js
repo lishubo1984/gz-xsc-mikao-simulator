@@ -131,6 +131,14 @@
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
+      const body = await res.json().catch(() => ({}));
+      // 云端台账同步失败不影响交卷（分数已经算好存好了），
+      // 但要让家长知道"这份成绩还没进云端表"，而不是悄悄吞掉。
+      const tc = body.tcloud || {};
+      if (tc.skipped === false && tc.ok === false) {
+        alert('成绩已保存，但同步到腾讯文档台账失败：\n'
+              + (tc.error || '原因未知') + '\n可稍后在报告页点「补传台账」。');
+      }
       localStorage.removeItem(LS_KEY());
       location.href = '/report/' + window.EXAM.attemptId;
     } catch (e) {

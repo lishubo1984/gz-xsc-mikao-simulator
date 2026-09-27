@@ -19,10 +19,37 @@
       <a class="btn" href="/answers/{{ paper.id }}/pdf">下载答案 PDF</a>
       <a class="btn" href="/answers/{{ paper.id }}">查看答案与思路</a>
       <a class="btn" href="/paper/{{ attempt_id }}">回到这份卷</a>
+      <button class="btn" id="syncBtn" type="button">补传成绩台账</button>
       <a class="btn primary" href="/">再练一份</a>
     </div>
+    <p class="sync-tip" id="syncTip"></p>
   </div>
 </section>
+
+<script>
+// 成绩台账同步：交卷时已自动推过一次，这里是"没推上去时的手动补传"。
+// 重复点也安全 —— 台账是追加语义，只会多一行记录，不会覆盖已有数据。
+document.getElementById('syncBtn').addEventListener('click', async (e) => {
+  const tip = document.getElementById('syncTip');
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  tip.textContent = '正在推送到腾讯文档…';
+  try {
+    const r = await fetch('/api/attempts/{{ attempt_id }}/sync-ledger', { method: 'POST' });
+    const d = await r.json();
+    if (d.ok) {
+      tip.innerHTML = '✓ 已写入台账第 ' + d.row + ' 行　'
+        + '<a href="' + d.url + '" target="_blank" rel="noopener">打开腾讯文档台账</a>';
+    } else {
+      tip.textContent = '✗ 同步失败：' + (d.error || '原因未知');
+    }
+  } catch (err) {
+    tip.textContent = '✗ 同步失败：' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
 
 <section class="panel">
   <h2>分题型得分</h2>

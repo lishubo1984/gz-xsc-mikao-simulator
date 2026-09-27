@@ -19,6 +19,8 @@ class SubmitIn(BaseModel):
     answers: dict[str, str] = {}
     scratch: dict[str, str] = {}
     remaining_sec: int | None = None
+    # 自动化测试里不想每次都往云端写数据，可置 true 跳过
+    skip_sync: bool = False
 
 
 @router.get("/attempts/{attempt_id}")
@@ -49,7 +51,38 @@ def submit(attempt_id: str, body: SubmitIn) -> dict:
                                      body.scratch, body.remaining_sec)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    return {"attempt_id": attempt_id, "report": report}
+
+    # 交卷后把成绩推到腾讯文档台账。
+    # 刻意不做成"推送失败就交卷失败"：孩子做完了卷子，分数必须保住，
+    # 云端只是台账。同步失败只记在返回值里，由前端提示，可稍后手动补推。
+    sync = {"ok": False, "skipped": True}
+    if not body.skip_sync:
+        try:
+            from app.services import sync_ledger
+            sync = sync_ledger.push_attempt(engine, attempt_id)
+        except Exception as exc:  # noqa: BLE001 - 同步是旁路，不能拖垮交卷
+            sync = {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
+
+    return {"attempt_id": attempt_id, "report": report, "tcloud": sync}
+
+
+@router.post("/attempts/{attempt_id}/sync-ledger")
+def sync_ledger_now(attempt_id: str) -> dict:
+    """手动补推一次台账（自动同步失败后用）。"""
+    if not repo.get_attempt(engine, attempt_id):
+        raise HTTPException(status_code=404, detail="作答记录不存在")
+    from app.services import sync_ledger
+    return sync_ledger.push_attempt(engine, attempt_id)
+
+
+@router.get("/ledger")
+def ledger_status() -> dict:
+    """查看云端台账现状（行数 + 前几行），用于确认同步真的落地了。"""
+    from app.services import sync_ledger
+    try:
+        return {"ok": True, **sync_ledger.ledger_summary()}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
 
 
 @router.get("/wrong-stats")
