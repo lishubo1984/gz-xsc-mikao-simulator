@@ -1,0 +1,231 @@
+# ============================================================
+# WorkBuddy 工作区元数据（本地产物，不入库）
+# ============================================================
+.workbuddy/
+
+# ============================================================
+# 编辑器 / IDE
+# ============================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ============================================================
+# 操作系统
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 测试 / 覆盖率
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+pytest_report.html
+
+# Jupyter
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# 类型检查 / Lint 缓存
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# ML / DL 框架产物
+runs/
+wandb/
+mlruns/
+lightning_logs/
+outputs/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+*.gguf
+
+# ============================================================
+# Node.js / 前端
+# ============================================================
+node_modules/
+jspm_packages/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.next/
+out/
+.nuxt/
+.vuepress/dist
+.vite/
+.cache/
+.temp/
+dist_electron/
+.webpack/
+.serverless/
+.fusebox/
+.dynamodb/
+
+# ============================================================
+# Java / Maven / Gradle
+# ============================================================
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradle-taskname.cache
+
+# ============================================================
+# C / C++
+# ============================================================
+*.o
+*.obj
+*.exe
+*.dll
+*.lib
+*.out
+*.app
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+
+# ============================================================
+# Go / Rust
+# ============================================================
+vendor/
+Cargo.lock
+
+# ============================================================
+# 数据与结果（大文件，建议走网盘/外部存储）
+# ============================================================
+*.csv
+*.tsv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.npz
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.sql.gz
+data/raw/
+data/cache/
+dataset/
+datasets/
+models/
+logs/
+log/
+*.log
+
+# ============================================================
+# 归档与临时文件
+# ============================================================
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.rar
+*.iso
+tmp/
+temp/
+*.tmp
+*.temp
+
+# ============================================================
+# 文档编译产物
+# ============================================================
+*.aux
+*.toc
+*.out
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# ============================================================
+# 环境变量与密钥（切勿入库）
+# ============================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.yaml
+secrets.json
+credentials.json
+service-account.json
