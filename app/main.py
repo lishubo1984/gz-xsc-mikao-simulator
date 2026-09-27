@@ -38,6 +38,15 @@ def create_app() -> FastAPI:
     def health() -> dict:
         return {"ok": True, "app": settings.app_name}
 
+    @app.on_event("shutdown")
+    async def _close_browser() -> None:
+        # PDF 导出会常驻一个 Chromium，不关的话进程退出后可能留下孤儿进程
+        try:
+            from app.services import pdf_export
+            await pdf_export.shutdown()
+        except Exception:  # noqa: BLE001 - 收尾阶段不该让关闭流程失败
+            pass
+
     return app
 
 

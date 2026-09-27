@@ -15,6 +15,8 @@
       · 提交于 {{ report.submitted_at }}
     </p>
     <div class="rep-actions">
+      <a class="btn" href="/papers/{{ paper.id }}/pdf">下载空白卷 PDF</a>
+      <a class="btn" href="/answers/{{ paper.id }}/pdf">下载答案 PDF</a>
       <a class="btn" href="/answers/{{ paper.id }}">查看答案与思路</a>
       <a class="btn" href="/paper/{{ attempt_id }}">回到这份卷</a>
       <a class="btn primary" href="/">再练一份</a>

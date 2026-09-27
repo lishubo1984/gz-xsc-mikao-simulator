@@ -1,0 +1,83 @@
+{# 学生作答卷（A4 单栏大留白），供 PDF 导出 / 浏览器直接打印。
+   与 paper.html 的区别：屏幕版给的是 input/radio/button，
+   打印版给的是下划线、括号和横线书写区 —— 孩子要能在纸上直接写。
+   CSS 由路由层内联传入（PDF 走 set_content，<link> 相对路径加载不到）。 #}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>{{ paper.title }}</title>
+{# PDF 走 set_content（base URL 是 about:blank，<link> 加载不到）必须内联 CSS；
+   浏览器预览则直接用 <link>，省得每次把整份 CSS 塞进 HTML。 #}
+{% if css %}<style>{{ css | safe }}</style>
+{% else %}<link rel="stylesheet" href="/static/print.css">{% endif %}
+</head>
+<body>
+
+<div class="sheet-head">
+  <div class="sh-title">{{ paper.title }}</div>
+  <div class="sh-sub">满分 {{ total_score }} 分　·　考试时间 {{ duration_min }} 分钟</div>
+  <div class="sh-fill">
+    <span>姓名　</span>
+    <span>班级　</span>
+    <span>得分　</span>
+  </div>
+</div>
+
+{% for sec in sections %}
+<section class="sec">
+  <h2 class="sec-title">{{ sec.title }}<span class="sec-score">共 {{ sec.score }} 分</span></h2>
+  {% if sec.instruction %}<p class="sec-inst">{{ sec.instruction }}</p>{% endif %}
+
+  {% for it in sec.qitems %}
+  <div class="q">
+    {# 刻意不印知识点名：真实密考卷上没有这一栏，印上去等于把考点直接告诉孩子，
+       练习效果打折。屏幕版答题页会显示（给家长看），打印卷不显示。 #}
+    <div class="q-head">
+      <span class="q-seq">{{ it.seq }}.</span>
+      <span class="q-score">{{ it.score }} 分</span>
+    </div>
+
+    <div class="q-stem">
+      {% if it.slot == 'choice' or it.slot == 'judge' %}
+        {{ (it.rendered_stem.replace('（　　）', '　') | math) | safe }}
+      {% elif it.slot in ['calc', 'solve', 'geometry', 'extra'] %}
+        {{ (it.rendered_stem | math) | safe }}
+      {% else %}
+        {# 填空题：题干里的 （　　） 换成手写下划线 #}
+        {% set parts = it.rendered_stem.split('（　　）') %}
+        {% for p in parts %}
+          {{ (p | math) | safe }}
+          {% if not loop.last %}<span class="uline">&nbsp;&nbsp;&nbsp;&nbsp;</span>{% endif %}
+        {% endfor %}
+        {% if parts|length == 1 %}<span class="uline" style="min-width:120pt">&nbsp;</span>{% endif %}
+      {% endif %}
+    </div>
+
+    {% if it.figure_svg %}
+    <div class="q-fig">{{ it.figure_svg | safe }}</div>
+    {% endif %}
+
+    {% if it.slot == 'choice' %}
+      <div class="q-choices">
+        {% for c in it.choices %}
+          <div class="c-item"><span class="c-box">（　）{{ 'ABCD'[loop.index0] }}.</span>{{ (c | math) | safe }}</div>
+        {% endfor %}
+      </div>
+
+    {% elif it.slot == 'judge' %}
+      <div class="q-judge">（　　）正确　　　　（　　）错误</div>
+
+    {% elif it.slot in ['calc', 'solve', 'geometry', 'extra'] %}
+      {# 书写区按分值给高度：1 分约 2 行。上限 16 行，避免一题吃掉整页。 #}
+      {% set lines = [[it.score * 2, 4] | max, 16] | min %}
+      <div class="workspace" style="height: {{ (lines * 0.85)|round(2) }}cm;"></div>
+      <div class="ans-line">答：<span class="uline">&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+
+</body>
+</html>

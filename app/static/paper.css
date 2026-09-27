@@ -152,6 +152,9 @@
 .seq-cell { font-weight: 700; width: 46px; }
 .ans-cell { color: var(--cyan-dark); font-weight: 700; width: 150px; }
 .sol-cell { line-height: 1.85; }
+/* 答案页的一句引导说明。之前漏了样式定义，测试脚本比对类名时才发现 ——
+   没有样式的 .lead 跟正文一模一样，起不到"补充说明"的层次作用。 */
+.lead { color: var(--dim); font-size: 13px; margin: 6px 0 12px; }
 
 @media print {
   .topbar, .foot, .exam-bar, .rep-actions, .ans-head .btn { display: none !important; }

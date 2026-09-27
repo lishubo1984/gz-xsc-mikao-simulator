@@ -5,7 +5,11 @@
 <div class="ans-head">
   <h1>{{ paper.title }} · 答案与解题思路</h1>
   <p class="lead">本页单独成页，可直接打印后裁剪给孩子订正。答题过程建议另用稿纸。</p>
-  <button class="btn" onclick="window.print()">打印本页</button>
+  <div class="no-print" style="margin-bottom:10px">
+    <a class="btn" href="/answers/{{ paper.id }}/pdf">下载答案 PDF</a>
+    <a class="btn" href="/papers/{{ paper.id }}/pdf">下载空白卷 PDF</a>
+    <button class="btn" onclick="window.print()">打印本页</button>
+  </div>
 </div>
 <table class="ans-tbl">
   <thead><tr><th>题号</th><th>题型</th><th>答案</th><th>解题思路</th></tr></thead>

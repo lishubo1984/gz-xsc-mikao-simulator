@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from app.core.config import MODULE_LABELS, SLOT_LABELS, settings
@@ -63,6 +63,28 @@ def index(request: Request):
     )
 
 
+def _build_sections(items: list[dict]) -> list[dict]:
+    """把扁平的题目列表按大题归拢。屏幕版与打印版共用，避免两处逻辑走偏。
+
+    段里的题目列表刻意不叫 items：Jinja2 的 {{ x.y }} 是先查属性再查键，
+    而 dict 天生自带 .items() 方法，叫 {{ sec.items }} 会拿到那个方法本身，
+    报 TypeError: 'builtin_function_or_method' object is not iterable。
+    """
+    sections: dict[str, dict] = {}
+    for it in items:
+        sec = sections.setdefault(it["section_title"], {
+            "title": it["section_title"],
+            "instruction": it.get("section_instruction") or "",
+            "qitems": [],
+            "score": 0,
+        })
+        sec["qitems"].append(it)
+        sec["score"] += int(it["score"])
+    return sorted(sections.values(),
+                  key=lambda s: _SECTION_ORDER.index(s["title"])
+                  if s["title"] in _SECTION_ORDER else 99)
+
+
 @router.get("/paper/{attempt_id}", response_class=HTMLResponse)
 def paper_page(request: Request, attempt_id: str):
     a = repo.get_attempt(engine, attempt_id)
@@ -79,23 +101,7 @@ def paper_page(request: Request, attempt_id: str):
         # 多空题在答案框里提示用「；」分隔，与 answers 的存储格式保持一致
         it["multiblank"] = "；" in str(it["answer"] or "")
 
-    # 段里的题目列表刻意不叫 items：Jinja2 的 {{ x.y }} 是先查属性再查键，
-    # 而 dict 天生自带 .items() 方法，叫 {{ sec.items }} 会拿到那个方法本身，
-    # 报 TypeError: 'builtin_function_or_method' object is not iterable。
-    sections: dict[str, dict] = {}
-    for it in items:
-        sec = sections.setdefault(it["section_title"], {
-            "title": it["section_title"],
-            "instruction": it.get("section_instruction") or "",
-            "qitems": [],
-            "score": 0,
-        })
-        sec["qitems"].append(it)
-        sec["score"] += int(it["score"])
-
-    ordered = sorted(sections.values(),
-                     key=lambda s: _SECTION_ORDER.index(s["title"])
-                     if s["title"] in _SECTION_ORDER else 99)
+    ordered = _build_sections(items)
 
     return templates.TemplateResponse(
         request=request, name="paper.html",
@@ -208,3 +214,97 @@ def answer_page(request: Request, paper_id: str):
             "slot_labels": SLOT_LABELS,
         },
     )
+
+
+# --------------------------------------------------------------------------
+# PDF 导出（学生作答卷 / 答案与思路页）
+# --------------------------------------------------------------------------
+def _inline_css(name: str) -> str:
+    """把 CSS 读成字符串内联进 <style>。
+
+    PDF 走 page.set_content()，页面的 base URL 是 about:blank，
+    <link rel="stylesheet" href="/static/xxx.css"> 这种相对路径根本加载不到，
+    打印出来就是一堆没样式的裸文本 —— CSS 必须内联。
+    """
+    return (settings.base_dir / "app" / "static" / name).read_text(encoding="utf-8")
+
+
+def _pdf_response(data: bytes, filename: str) -> Response:
+    # 中文文件名直接放进 header 会被浏览器截断成乱码，必须百分号编码
+    from urllib.parse import quote
+    return Response(
+        content=data,
+        media_type="application/pdf",
+        headers={"Content-Disposition":
+                 f"attachment; filename*=UTF-8''{quote(filename)}"},
+    )
+
+
+@router.get("/papers/{paper_id}/print", response_class=HTMLResponse)
+def paper_print(request: Request, paper_id: str):
+    """打印预览：浏览器里直接 Ctrl+P，不用先下 PDF。"""
+    paper = repo.get_paper(engine, paper_id)
+    if not paper:
+        return HTMLResponse("试卷不存在", status_code=404)
+    items = repo.get_items(engine, paper_id)
+    return templates.TemplateResponse(
+        request=request, name="print_paper.html",  # 独立模板，不继承 base.html
+        context={"paper": paper, "sections": _build_sections(items), "css": None,
+                 "total_score": paper["total_score"],
+                 "duration_min": paper["duration_min"]},
+    )
+
+
+@router.get("/answers/{paper_id}/print", response_class=HTMLResponse)
+def answers_print(request: Request, paper_id: str):
+    paper = repo.get_paper(engine, paper_id)
+    if not paper:
+        return HTMLResponse("试卷不存在", status_code=404)
+    items = repo.get_items(engine, paper_id)
+    return templates.TemplateResponse(
+        request=request, name="print_answers.html",
+        context={"paper": paper, "items": items, "css": None,
+                 "slot_labels": SLOT_LABELS},
+    )
+
+
+@router.get("/papers/{paper_id}/pdf")
+async def paper_pdf(paper_id: str):
+    """学生作答卷 PDF：空白卷，可直接在纸上作答，不含答案。
+
+    按 paper_id 而不是 attempt_id 出，是有意的：真实用法是"先打印卷子给孩子做，
+    再打印答案页对答案"，这时候还没有任何作答记录。
+    """
+    from app.services import pdf_export
+
+    paper = repo.get_paper(engine, paper_id)
+    if not paper:
+        return HTMLResponse("试卷不存在", status_code=404)
+    items = repo.get_items(engine, paper_id)
+
+    html = templates.get_template("print_paper.html").render(
+        paper=paper, sections=_build_sections(items), css=_inline_css("print.css"),
+        total_score=paper["total_score"], duration_min=paper["duration_min"],
+    )
+    data = await pdf_export.render_pdf(
+        html, tag=f"{paper['title']}　作答卷", right="姓名：____________")
+    return _pdf_response(data, f"{paper['title']}-作答卷.pdf")
+
+
+@router.get("/answers/{paper_id}/pdf")
+async def answers_pdf(paper_id: str):
+    """答案与解题思路 PDF：单独成页，打印后裁剪给孩子订正。"""
+    from app.services import pdf_export
+
+    paper = repo.get_paper(engine, paper_id)
+    if not paper:
+        return HTMLResponse("试卷不存在", status_code=404)
+    items = repo.get_items(engine, paper_id)
+
+    html = templates.get_template("print_answers.html").render(
+        paper=paper, items=items, css=_inline_css("print.css"),
+        slot_labels=SLOT_LABELS,
+    )
+    data = await pdf_export.render_pdf(
+        html, tag=f"{paper['title']}　答案与解题思路", right="")
+    return _pdf_response(data, f"{paper['title']}-答案与解题思路.pdf")

@@ -75,7 +75,11 @@
         <td class="dim">{{ p.created_at }}</td>
         <td>{{ p.attempt_cnt }}</td>
         <td>{% if p.best_score is not none %}<b class="score">{{ p.best_score }}</b>{% else %}<span class="dim">未作答</span>{% endif %}</td>
-        <td><a class="btn small" href="/answers/{{ p.id }}">看答案</a></td>
+        <td class="nowrap">
+          <a class="btn small" href="/papers/{{ p.id }}/pdf">打印卷子</a>
+          <a class="btn small" href="/answers/{{ p.id }}/pdf">答案 PDF</a>
+          <a class="btn small" href="/answers/{{ p.id }}">看答案</a>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

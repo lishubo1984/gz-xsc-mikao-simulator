@@ -1,0 +1,238 @@
+/* 打印 / PDF 专用排版。
+ *
+ * 为什么单独一份 CSS 而不是复用 paper.css：
+ *   屏幕版追求"信息密度 + 交互"（倒计时、进度条、输入框、按钮），
+ *   打印版追求"能下笔"（横线、留白、不下水）。两者目标相反，
+ *   硬塞进一份 CSS 只会互相拖累 —— 屏幕版为了打印加一堆空行，
+ *   打印版为了屏幕留一堆按钮位。分开维护，各自干净。
+ *
+ * 关键约束：PDF 走 page.set_content()，相对路径的 <link> 加载不到，
+ * 所以本文件由路由层读出来内联进 <style>，不能靠 <link> 引入。
+ */
+
+/* ---------- 页面骨架 ---------- */
+body {
+  font-family: "SimSun", "Songti SC", "Noto Serif CJK SC", serif;
+  font-size: 12pt;
+  line-height: 1.9;
+  color: #000;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.sheet-head {
+  text-align: center;
+  border-bottom: 2px solid #000;
+  padding-bottom: 6pt;
+  margin-bottom: 10pt;
+}
+.sheet-head .sh-title {
+  font-family: "SimHei", "Heiti SC", sans-serif;
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: 1pt;
+}
+.sheet-head .sh-sub {
+  font-size: 9.5pt;
+  color: #444;
+  margin-top: 2pt;
+}
+
+/* 姓名 / 班级 / 得分 栏：打印出来手写的第一行 */
+.sh-fill {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8pt;
+  font-size: 11pt;
+}
+.sh-fill span {
+  /* 下划线用手写区，别用 border-bottom，打印时容易被裁半 */
+  border-bottom: 1px solid #000;
+  padding: 0 40pt 1pt 2pt;
+}
+
+/* ---------- 大题 ---------- */
+.sec { margin-bottom: 12pt; }
+.sec-title {
+  font-family: "SimHei", "Heiti SC", sans-serif;
+  font-size: 13pt;
+  font-weight: 700;
+  margin: 10pt 0 4pt;
+  padding: 3pt 0;
+  border-bottom: 1px solid #999;
+}
+.sec-title .sec-score {
+  float: right;
+  font-weight: 400;
+  font-size: 10pt;
+  color: #555;
+}
+.sec-inst {
+  font-size: 10pt;
+  color: #444;
+  margin: 0 0 6pt;
+  /* 楷体更接近真实试卷的大题说明 */
+  font-family: "KaiTi", "Kaiti SC", serif;
+}
+
+/* ---------- 单题 ---------- */
+.q {
+  margin: 0 0 10pt;
+  padding: 0;
+  /* 题目整体不跨页：宁可把整题推到下一页，也不要"题干在这页、作答区在那页" */
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.q-head {
+  font-size: 10pt;
+  color: #666;
+  margin-bottom: 1pt;
+}
+.q-seq {
+  font-weight: 700;
+  color: #000;
+  font-size: 12pt;
+}
+.q-score { margin-left: 6pt; }
+.q-tip { margin-left: 6pt; font-size: 9pt; color: #888; }
+
+.q-stem {
+  text-indent: 0;
+  margin: 0 0 4pt;
+}
+.q-stem .uline {
+  display: inline-block;
+  min-width: 60pt;
+  border-bottom: 1px solid #000;
+  margin: 0 3pt;
+  height: 1.2em;
+  vertical-align: baseline;
+}
+
+.q-fig {
+  text-align: center;
+  margin: 4pt 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.q-fig svg { max-width: 78%; height: auto; }
+
+/* ---------- 分数 / 数学标记 ----------
+ * 真实踩坑（本页最严重的一个）：render_math 把 [[2/9]] 输出成
+ *   <span class="frac"><span class="num">2</span><span class="den">9</span></span>
+ * 而 .frac 的样式原本只写在 paper.css 里。打印版只加载 print.css，
+ * 于是 num/den 两个 span 既没有 display:block 也没有中间那条分数线，
+ * 两个数字就并排贴在一起 —— 卷面上印出来是"已知某数的 29 是 22"，
+ * 孩子看到的是"29"而不是 2/9，题目直接不成立。
+ * 凡是 render_math 会产出的类名，print.css 必须同样定义，否则就是
+ * "网页上对了、打印出来乱了"。
+ */
+.frac {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 3px;
+  line-height: 1.15;
+}
+.frac .num,
+.frac .den {
+  display: block;
+  padding: 0 5px;
+  font-size: 0.92em;
+}
+.frac .num { border-bottom: 1.2px solid currentColor; }
+.mixed { display: inline-block; vertical-align: middle; }
+.mixed .frac { margin-left: 2px; }
+.math-inline { font-style: italic; }
+
+/* ---------- 选择题 / 判断题 ---------- */
+.q-choices {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2pt 8pt;
+  margin: 3pt 0 0;
+}
+.q-choices .c-item {
+  font-size: 11.5pt;
+  /* 四个选项一行排不下就两行，别挤成一坨 */
+  break-inside: avoid;
+}
+.q-choices .c-box {
+  font-family: "SimSun", serif;
+  margin-right: 4pt;
+}
+.q-judge {
+  font-size: 11.5pt;
+  margin: 3pt 0 0;
+}
+
+/* ---------- 解答题书写区 ---------- */
+.workspace {
+  margin: 4pt 0 0;
+  border: 1px solid #d0d0d0;
+  border-radius: 2pt;
+  /* 横线格：每行 0.86cm，与 line-height 对齐后孩子写起来不飘 */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 0.83cm,
+    #d8dee3 0.83cm,
+    #d8dee3 0.85cm
+  );
+  background-position: 0 0.28cm;
+}
+.ans-line {
+  margin-top: 5pt;
+  font-size: 11.5pt;
+}
+.ans-line .uline {
+  display: inline-block;
+  min-width: 90pt;
+  border-bottom: 1px solid #000;
+}
+
+/* ---------- 答案页 ---------- */
+.ans-head h1 {
+  font-family: "SimHei", "Heiti SC", sans-serif;
+  font-size: 15pt;
+  text-align: center;
+  margin: 0 0 4pt;
+}
+.ans-head .lead {
+  font-size: 9.5pt;
+  color: #555;
+  text-align: center;
+  margin: 0 0 8pt;
+}
+.ans-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5pt;
+}
+.ans-tbl th,
+.ans-tbl td {
+  border: 1px solid #999;
+  padding: 4pt 6pt;
+  vertical-align: top;
+  text-align: left;
+  line-height: 1.7;
+}
+.ans-tbl th {
+  background: #f2f2f2 !important;
+  font-family: "SimHei", sans-serif;
+  font-weight: 700;
+}
+.ans-tbl tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.ans-tbl .seq-cell { width: 8%; text-align: center; font-weight: 700; }
+.ans-tbl .dim { width: 12%; color: #555; }
+.ans-tbl .ans-cell { width: 20%; font-weight: 700; color: #b03030; }
+.sol-cell { color: #222; }
+
+/* ---------- 通用打印规则 ---------- */
+.no-print { display: none !important; }
+/* 按钮、导航、倒计时在打印模板里根本不渲染，这里是双保险 */
+button, .exam-bar, .nav, .save-tip { display: none !important; }
