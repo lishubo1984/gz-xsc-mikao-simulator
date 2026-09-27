@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}答案与解题思路 · {{ paper.title }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/paper.css">{% endblock %}
+{% block body %}
+<div class="ans-head">
+  <h1>{{ paper.title }} · 答案与解题思路</h1>
+  <p class="lead">本页单独成页，可直接打印后裁剪给孩子订正。答题过程建议另用稿纸。</p>
+  <button class="btn" onclick="window.print()">打印本页</button>
+</div>
+<table class="ans-tbl">
+  <thead><tr><th>题号</th><th>题型</th><th>答案</th><th>解题思路</th></tr></thead>
+  <tbody>
+    {% for it in items %}
+    <tr>
+      <td class="seq-cell">{{ it.seq }}</td>
+      <td class="dim">{{ slot_labels.get(it.slot, it.slot) }}</td>
+      <td class="ans-cell">{{ (it.answer | math) | safe }}</td>
+      <td class="sol-cell">{{ ((it.rendered_solution or '') | math) | safe }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

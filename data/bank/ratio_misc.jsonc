@@ -1,0 +1,198 @@
+// 广州小升初密考题库 · 比和比例（目标 10 分）+ 其他综合应用（目标 8 分）
+[
+  {
+    "id": "rp_meaning_01",
+    "knowledge_id": "ratio_meaning",
+    "slot": "fill",
+    "stem": "{a} : {b} 的比值是（　　），化成最简整数比是（　　）。",
+    "answer_expr": "Fraction({a}, {b})",
+    "answer_display": "{ratio}；{simplest}",
+    "params": {
+      "a": {"type": "choice", "from": [12, 18, 24, 36, 48]},
+      "b": {"type": "choice", "from": [16, 20, 30, 40, 60]},
+      // 比值是一个数（分数形式），最简比要写成 a:b 形式，两者结果形式不同。
+      // 事故复盘：早期直接引用未定义的 {ratio}/{simplest}，每份卷都残留占位符。
+      "ratio": {"type": "expr", "expr": "str(Fraction({a}, {b}))"},
+      "simplest": {"type": "expr", "expr": "str(Fraction({a}, {b})).replace('/', ':')"}
+    },
+    "solution": "注意区分比值和化简比。比值是一个数，用前项除以后项求得，结果可以是分数、小数或整数；化简比是一个比，要把前项和后项同时除以它们的最大公因数，结果必须写成 a 比 b 的形式。两者结果形式不同，不能混淆。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "rp_distribution_01",
+    "knowledge_id": "ratio_distribution",
+    "slot": "solve",
+    "stem": "学校把 {total} 本图书按 {a} : {b} : {c} 分给四、五、六三个年级。六年级分到多少本？",
+    "answer_expr": "{total} // ({a} + {b} + {c}) * {c}",
+    "answer_display": "{ans} 本",
+    "params": {
+      "total": {"type": "choice", "from": [360, 540, 630, 720, 900]},
+      "a": {"type": "choice", "from": [2, 3, 4]},
+      "b": {"type": "choice", "from": [3, 4, 5]},
+      "c": {"type": "choice", "from": [4, 5, 6]}
+    },
+    "solution": "按比例分配的标准做法是先求总份数，再求每份数。总份数 = {a} 加 {b} 加 {c}；每份 = 总量 ÷ 总份数；六年级占 {c} 份，用每份乘 {c} 即可。也可以直接用总量乘 {c} 除以总份数，两种算法结果相同，第二种更快。",
+    "difficulty": 3,
+    "unit": "本"
+  },
+  {
+    "id": "rp_proportion_01",
+    "knowledge_id": "proportion_property",
+    "slot": "fill",
+    "stem": "如果 {a} : {b} = x : {d}，那么 x = （　　）。",
+    "answer_expr": "Fraction({a} * {d}, {b})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "int", "min": 2, "max": 12},
+      "b": {"type": "int", "min": 2, "max": 12},
+      "d": {"type": "int", "min": 2, "max": 12}
+    },
+    "solution": "根据比例的基本性质，两个内项的积等于两个外项的积。这里内项是 {b} 和 x，外项是 {a} 和 {d}，所以先算 {b} 乘 x 等于 {a} 乘 {d}，再把两边同除以 {b} 就得到 x。这是解比例题的固定方法。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "rp_direct_01",
+    "knowledge_id": "direct_inverse_proportion",
+    "slot": "judge",
+    "stem": "路程一定时，行驶的速度和时间成反比例。（　　）",
+    "answer_expr": "1",
+    "answer_display": "√",
+    "params": null,
+    "solution": "判断正反比例要看两个量的乘积或比值是不是一定。速度乘时间等于路程，路程一定说明这两个量的乘积一定，所以速度和时间成反比例，打对勾。对照记忆：乘积一定成反比例，比值一定成正比例。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "rp_meaning_02",
+    "knowledge_id": "ratio_meaning",
+    "slot": "choice",
+    "stem": "把 {w} 克盐放入 {wt} 克水中，盐占盐水的（　　）。",
+    // 改问「盐占盐水的几分之几」而不是「盐与盐水的比」：
+    // 这样答案天然是分数，可以用 [[a/b]] 渲染，也避开了 5:41 与 5/41 两种写法的歧义。
+    // 干扰项显式声明为三类经典错误，比随机数值扰动更有教学价值：
+    //   ① 盐÷水（漏加盐的质量，最常见失分点）② 水÷盐水（弄反前项后项）③ 盐水÷盐
+    "answer_expr": "Fraction({w}, {w} + {wt})",
+    "answer_display": "[[{ans}]]",
+    // {ans} 在选项里代表"已套用 answer_display 之后的最终答案文本"，不要再手动加 [[ ]]，
+    // 否则会被包两层变成 [[[[1/19]]]]，导致答案与选项对不上。
+    "choices_expr": ["{ans}", "[[{w1}]]", "[[{w2}]]", "[[{w3}]]"],
+    // 三个错项都必须是真分数且互不相等：题目问"盐占盐水的几分之几"，
+    // 选项里出现 [[19]] 或 [[23/5]] 这种假分数，孩子一眼就能排除，题目失去区分度。
+    //   ① 盐÷水（漏加盐的质量，最常见失分点）
+    //   ② 水÷盐水（弄反前后项）
+    //   ③ 盐÷(盐+水) 的分母写错一位，模拟"算错盐水总量"的错法
+    // 注意三者必须两两不等 —— 曾把②③写成同一个表达式，选项直接出现两个 [[8/9]]。
+    "distractor_expr": [
+      "Fraction({w}, {wt})",
+      "Fraction({wt}, {w} + {wt})",
+      "Fraction({w}, {wt} - {w})"
+    ],
+    "params": {
+      "w": {"type": "choice", "from": [10, 15, 20, 25, 30]},
+      "wt": {"type": "choice", "from": [60, 90, 180, 200, 270]},
+      "brine": {"type": "expr", "expr": "{w} + {wt}"}
+    },
+    // wt > 2w 同时保证两件事：
+    //   ① ③号错项 w/(wt-w) 仍是真分数（wt-w > w），不会出现 [[5/9]] 变 [[9/5]] 这种假分数；
+    //   ② ②号 wt/(w+wt) 与③号天然不同（前者分母大于分子的一倍以上）。
+    // wt % w == 0 保证①号自动约成最简分数。
+    "constraints": [
+      "{wt} > 2 * {w}",
+      "{wt} % {w} == 0"
+    ],
+    "solution": "盐水 = 盐 + 水 = {w} + {wt} = {brine} 克，这是最容易漏掉的一步。题目问盐占盐水的几分之几，就用盐的质量除以盐水的总质量，最后约成最简分数。常见的错法有三种：直接拿 {w} 除以 {wt}，把前后项弄反，或者用盐水除以盐 —— 这三个错误答案都放在选项里了。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "mc_tree_01",
+    "knowledge_id": "tree_planting",
+    "slot": "fill",
+    "stem": "在一条长 {len_m} 米的公路一侧植树，每隔 {gap} 米栽一棵（两端都栽），一共要栽（　　）棵树；如果只有一端栽，一共要栽（　　）棵。",
+    "answer_expr": "{len_m} // {gap} + 1",
+    "answer_display": "{ans}；{one_end}",
+    "params": {
+      "len_m": {"type": "choice", "from": [40, 60, 80, 100, 120, 200]},
+      "gap": {"type": "choice", "from": [4, 5, 8, 10, 20]},
+      // 只有一端栽时棵数 = 间隔数 = 全长 ÷ 间隔，不需要 +1
+      "one_end": {"type": "expr", "expr": "{len_m} // {gap}"}
+    },
+    // 间隔必须整除全长，否则棵数不是整数，题干与答案会自相矛盾
+    "constraints": ["{len_m} % {gap} == 0"],
+    "solution": "先求间隔数，间隔数 = 总长 ÷ 间隔距离。两端都栽时棵数比间隔数多 1；只有一端栽时棵数等于间隔数；两端都不栽时棵数比间隔数少 1。口诀是两端都栽加一，只栽一端不加，两端不栽减一。本题两种情形分别计算即可。",
+    "difficulty": 3,
+    "unit": "棵"
+  },
+  {
+    "id": "mc_avg_01",
+    "knowledge_id": "average_problem",
+    "slot": "fill",
+    "stem": "小明前 {n} 次数学测验的平均分是 {avg1} 分，为了使 {total_n} 次的平均分达到 {avg2} 分，他第 {total_n} 次测验至少要考（　　）分。",
+    "answer_expr": "{total_n} * {avg2} - {n} * {avg1}",
+    "answer_display": "{ans}",
+    "params": {
+      "n": {"type": "choice", "from": [3, 4, 5]},
+      "avg1": {"type": "choice", "from": [82, 84, 85, 88, 90]},
+      "total_n": {"type": "choice", "from": [4, 5, 6]},
+      "avg2": {"type": "choice", "from": [86, 88, 90, 92, 94]}
+    },
+    // 三次约束缺一不可，审计实测分别对应三种错题：
+    //   total_n <= n  → 「第 5 次」却在说前 5 次，答案算出 -10 分
+    //   avg2 <= avg1  → 目标反而更低，不合常理
+    //   结果 > 100    → 要求考 318 分，超出满分
+    "constraints": [
+      "{total_n} > {n}",
+      "{avg2} > {avg1}",
+      "{total_n} * {avg2} - {n} * {avg1} <= 100"
+    ],
+    "solution": "用总分建立等量关系。先算要达到目标平均分需要多少总分，即目标平均分乘总次数；再算前面几次已经得到的总分；两者相减就是最后一次至少要考的分数。这类题的核心是抓住总分这个整体量不变。",
+    "difficulty": 3,
+    "unit": "分"
+  },
+  {
+    "id": "mc_pigeon_01",
+    "knowledge_id": "pigeonhole",
+    "slot": "judge",
+    "stem": "袋中有红、黄、蓝三种颜色的球各若干个，至少摸出 4 个球，才能保证一定有 2 个球的颜色相同。（　　）",
+    "answer_expr": "1",
+    "answer_display": "√",
+    "params": null,
+    "solution": "用抽屉原理的最不利原则来想。三种颜色看作三个抽屉，最不巧的情况是先摸到的 3 个球颜色各不相同，正好每种颜色各一个。那么第 4 个球无论是什么颜色，都必定与前面某一个同色。所以摸 4 个能保证有 2 个同色，打对勾。结论里出现保证二字，就必须按最不利情况推理。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "mc_probability_01",
+    "knowledge_id": "stats_probability",
+    "slot": "choice",
+    "stem": "袋中有 {r} 个红球和 {b} 个黄球（除颜色外完全相同），任意摸出一个球，摸到红球的可能性是（　　）。",
+    "answer_expr": "Fraction({r}, {r} + {b})",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "r": {"type": "int", "min": 1, "max": 9},
+      "b": {"type": "int", "min": 1, "max": 9}
+    },
+    "solution": "摸到红球的可能性等于红球的个数除以球的总个数。分母是球的总数，即红球加黄球，而不是黄球数；分子是红球数。可能性是一个分数，其值小于或等于 1。注意不要与摸到黄球的可能性弄混。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "mc_counting_01",
+    "knowledge_id": "counting_principle",
+    "slot": "choice",
+    "stem": "从 {m} 种主食和 {n} 种饮料中各选一种，搭配成一份套餐，一共有（　　）种不同的搭配方法。",
+    "answer_expr": "{m} * {n}",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "m": {"type": "int", "min": 2, "max": 6},
+      "n": {"type": "int", "min": 2, "max": 6}
+    },
+    "solution": "这是乘法原理。搭配套餐要分两步完成，第一步选主食有 {m} 种方法，第二步选饮料有 {n} 种方法，两步都完成才算完成这件事，所以用乘法。对照记忆：如果题目说的是或者的关系，就用加法原理。",
+    "difficulty": 4,
+    "unit": "种"
+  }
+]

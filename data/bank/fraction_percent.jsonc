@@ -1,0 +1,222 @@
+// 广州小升初密考题库 · 分数与百分数应用（目标 30 分）
+[
+  {
+    "id": "fp_unit_01",
+    "knowledge_id": "unit_one",
+    "slot": "fill",
+    "stem": "已知某数的 [[{a}/{b}]] 是 {c}，这个数是（　　）。",
+    "answer_expr": "Fraction({c} * {b}, {a})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "int", "min": 2, "max": 7},
+      "b": {"type": "int", "min": 3, "max": 9},
+      "c": {"type": "int", "min": 6, "max": 40}
+    },
+    "constraints": ["math.gcd({a}, {b}) == 1", "{a} < {b}"],
+    "solution": "这里单位一是未知数，要用除法：单位一 = 已知量 ÷ 对应的分率 = {c} ÷ {a}/{b} = {c} × {b}/{a}。牢记求单位一用除法，求部分量用乘法，这是分百应用题的根基。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "fp_fraction_01",
+    "knowledge_id": "fraction_word_problem",
+    "slot": "solve",
+    "stem": "学校图书馆有故事书 {total} 本，科技书比故事书多 [[{a}/{b}]]。科技书有多少本？",
+    "answer_expr": "int({total} * Fraction({a} + {b}, {b}))",
+    "answer_display": "{ans} 本",
+    "params": {
+      "total": {"type": "choice", "from": [120, 180, 240, 300, 360, 480]},
+      "a": {"type": "int", "min": 1, "max": 5},
+      "b": {"type": "int", "min": 3, "max": 9}
+    },
+    "constraints": ["math.gcd({a}, {b}) == 1", "{a} < {b}"],
+    "solution": "把故事书的本数看作单位一，科技书就是故事书的 （1 + {a}/{b}）。求科技书的数量就是求 {total} 的这个分率是多少，用乘法计算。判断乘除的关键是看单位一已知还是未知。",
+    "difficulty": 3,
+    "unit": "本"
+  },
+  {
+    "id": "fp_fraction_02",
+    "knowledge_id": "fraction_word_problem",
+    "slot": "choice",
+    "stem": "一根绳子长 {l} 米，第一次用去 [[{a}/{b}]]，第二次用去 [[{a}/{b}]] 米。两次用去的长度相比（　　）。",
+    "answer_expr": "1",
+    "answer_display": "{correct}",
+    "choices_expr": ["第一次用去的长", "第二次用去的长", "两次一样长", "无法判断"],
+    "params": {
+      "l": {"type": "choice", "from": [6, 8, 12, 15, 20]},
+      "a": {"type": "int", "min": 1, "max": 3},
+      "b": {"type": "int", "min": 4, "max": 8}
+    },
+    // 本题答案「第一次用去的长」成立的前提是绳长 > 1 米：
+    // 第一次用去 l × a/b 米，第二次用去 a/b 米，只有 l > 1 时前者才更长。
+    // 这个前提原先藏在参数取值里，任何人改一下 l 的取值范围就会静默出错题。
+    "constraints": ["{l} > 1", "math.gcd({a}, {b}) == 1", "{a} < {b}"],
+    "solution": "关键区分分率和具体数量。第一次用去的是全长的 {a}/{b}，是分率，实际长度要用 {l} 乘这个分率；第二次用去的是 {a}/{b} 米，是具体长度。两者含义不同，必须分别算出实际长度再比较。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "fp_percent_01",
+    "knowledge_id": "percent_word_problem",
+    "slot": "fill",
+    "stem": "科学课上做种子发芽实验，种下 {total} 粒种子，有 {sprout} 粒发芽，发芽率是（　　）%。",
+    "answer_expr": "round({sprout} / {total} * 100, 1)",
+    "answer_display": "{ans}%",
+    "params": {
+      "total": {"type": "choice", "from": [40, 50, 80, 100, 200, 250]},
+      "sprout": {"type": "choice", "from": [36, 42, 68, 88, 96, 180, 225]}
+    },
+    // 发芽的种子数不可能超过种下的总数 —— 审计实测 38% 的组合会算出 225% 的发芽率。
+    // 这条约束是日常生活中显然成立、代码却不会自己知道的常识。
+    "constraints": ["{sprout} <= {total}"],
+    "solution": "发芽率 = 发芽的种子数 ÷ 试验种子总数 × 100%。列式：{sprout} ÷ {total} × 100%。注意百分率表示两个数的比，结果不会超过 100%，算出小数后按要求保留位数。",
+    "difficulty": 2,
+    "unit": "%"
+  },
+  {
+    "id": "fp_percent_02",
+    "knowledge_id": "percent_change",
+    "slot": "solve",
+    "stem": "一件商品原价 {price} 元，商店先降价 {a}%，又在此基础上提价 {a}%。现在的价格是多少元？",
+    "answer_expr": "round({price} * (1 - {a} / 100) * (1 + {a} / 100), 2)",
+    "answer_display": "{ans} 元",
+    "params": {
+      "price": {"type": "choice", "from": [200, 300, 400, 500, 800, 1000]},
+      "a": {"type": "choice", "from": [10, 20, 25]}
+    },
+    "solution": "两次变化以不同的价格为基准。第一步降价以原价 {price} 元为单位一，算出降价后的价格；第二步提价以降价后的价格为单位一，而不是再以原价计算。这正是先降后升不能抵消的原因，两次单位一不同。",
+    "difficulty": 4,
+    "unit": "元"
+  },
+  {
+    "id": "fp_percent_03",
+    "knowledge_id": "percent_word_problem",
+    "slot": "choice",
+    "stem": "下面各百分率中，有可能超过 100% 的是（　　）。",
+    "answer_expr": "1",
+    "answer_display": "{correct}",
+    // {correct} 写法约定 choices_expr 第一项为正确答案。
+    // 事故复盘：原先第一项是「出勤率」，实际只有增长率可能超过 100%，
+    // 等于稳定给出错误答案且不报任何异常 —— 已把增长率提到首位。
+    "choices_expr": ["增长率", "出勤率", "成活率", "合格率"],
+    "params": null,
+    "solution": "逐项分析：出勤率 = 出勤人数 ÷ 总人数，最多等于 100%；成活率 = 成活数 ÷ 种植总数，最多等于 100%；合格率 = 合格数 ÷ 抽检总数，最多等于 100%。而增长率是增长的部分与原来数量之比，当增长量超过原数量时就会大于 100%，所以选增长率。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "fp_concentration_01",
+    "knowledge_id": "concentration",
+    "slot": "solve",
+    "stem": "在浓度为 {p}% 的盐水 {m} 克中，加入 {n} 克水后，盐水的浓度变为百分之几？（结果保留一位小数）",
+    "answer_expr": "round({m} * {p} / 100 / ({m} + {n}) * 100, 1)",
+    "answer_display": "{ans}%",
+    "params": {
+      "p": {"type": "choice", "from": [10, 12, 15, 20, 25]},
+      "m": {"type": "choice", "from": [100, 200, 400, 500]},
+      "n": {"type": "choice", "from": [50, 100, 150, 200]}
+    },
+    "solution": "抓住加水前后盐的质量不变这个关键。先求出原来含盐多少克，这是不变量；加水后盐水总重变大，但盐仍是那么多；再用盐的质量除以新的盐水总重即得新浓度。加水只会让浓度变小，结果应小于原来的 {p}%，可用此检验答案是否合理。",
+    "difficulty": 4,
+    "unit": "%"
+  },
+  {
+    "id": "fp_interest_01",
+    "knowledge_id": "interest",
+    "slot": "solve",
+    "stem": "妈妈把 {money} 元存入银行，定期 {years} 年，年利率是 {rate}%。到期时妈妈一共可以取回多少钱？",
+    "answer_expr": "round({money} + {money} * {rate} / 100 * {years}, 2)",
+    "answer_display": "{ans} 元",
+    "params": {
+      "money": {"type": "choice", "from": [2000, 5000, 8000, 10000, 20000]},
+      "years": {"type": "choice", "from": [2, 3, 5]},
+      "rate": {"type": "choice", "from": [2.75, 3.0, 3.25, 3.5, 4.0]}
+    },
+    "solution": "分两步算。先用利息 = 本金 × 利率 × 时间求出利息，再把本金加上利息得到取回的总钱数。题目问的是一共可以取回，别只算利息漏加本金，这是最常见的失分点。",
+    "difficulty": 2,
+    "unit": "元"
+  },
+  {
+    "id": "fp_engineering_01",
+    "knowledge_id": "engineering",
+    "slot": "solve",
+    "stem": "一项工程，甲队单独做需要 {a} 天完成，乙队单独做需要 {b} 天完成。两队合作，多少天可以完成这项工程？",
+    "answer_expr": "round(1 / (1 / {a} + 1 / {b}), 2)",
+    "answer_display": "{ans} 天",
+    "params": {
+      "a": {"type": "choice", "from": [6, 8, 10, 12, 15, 20]},
+      "b": {"type": "choice", "from": [12, 15, 20, 24, 30]}
+    },
+    "solution": "把这项工程的工作总量看作单位一。甲的工作效率是 1 除以 {a}，乙的工作效率是 1 除以 {b}；两队合作的工作效率是两者之和。合作时间 = 工作总量 ÷ 合作效率。工程问题固定套路是设总量为 1，用效率代替具体工作量。",
+    "difficulty": 4,
+    "unit": "天"
+  },
+  {
+    "id": "fp_engineering_02",
+    "knowledge_id": "engineering",
+    "slot": "choice",
+    "stem": "修一条路，甲队单独修要 {a} 天，乙队单独修要 {b} 天。两队合修 {c} 天后，还剩下这条路的（　　）没有修。",
+    "answer_expr": "Fraction({b} * ({a} - {c}), {a} * {b}) - Fraction({c}, {b})",
+    "answer_display": "[[{ans}]]",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "distractor_expr": [
+      "[[{c}/{a}]]",
+      "[[{c}/{b}]]",
+      "[[({a}-{c})/({a}+{b})]]"
+    ],
+    "params": {
+      "a": {"type": "choice", "from": [10, 12, 15]},
+      "b": {"type": "choice", "from": [20, 24, 30]},
+      "c": {"type": "choice", "from": [3, 4, 5]}
+    },
+    "constraints": [
+      "Fraction({c},{a}) + Fraction({c},{b}) < 1"
+    ],
+    "solution": "仍把全长看作单位一。甲乙合修的工作效率 = 1/{a} + 1/{b}，{c} 天可完成的部分用效率乘时间求出；剩下的 = 1 − 已完成的部分。题目问还剩几分之几，结果用分数表示即可，不需要具体长度。注意选项里的三个错项分别是「只看甲队完成的份数」「只看乙队完成的份数」「把两队合修的天数当成答案」，它们都是把单位一用错造成的。",
+    "difficulty": 4,
+    "unit": null,
+    "note": "答案写成两个分数相减，是为了让结果落回真分数（如 7/15）而不是 0.4667 这种小数 —— 真题里「还剩几分之几」不会给小数答案。三个错项由 distractor_expr 显式声明：自动派生会在 0 附近产生 1.4667/2.4667 这类一眼假的选项，而这三个恰好对应三类真实错法。constraints 保证合修 {c} 天不会把整条路修完，否则答案会变成 0 或负数。"
+  },
+  {
+    "id": "fp_reverse_01",
+    "knowledge_id": "reverse_reasoning",
+    "slot": "solve",
+    "stem": "小明有一些零花钱，第一天花了总数的一半，第二天花了剩下的一半，第三天又花了剩下的一半，这时还剩 {left} 元。小明原来有多少元？",
+    "answer_expr": "{left} * 8",
+    "answer_display": "{ans} 元",
+    "params": {
+      "left": {"type": "choice", "from": [5, 10, 15, 20, 25, 30]}
+    },
+    "solution": "用倒推法从结果往回算。每次花掉一半意味着剩下的是花掉前的一半，所以往前推一步就乘 2。连推三次：剩下的钱乘 2 得到第三天开始时的钱，再乘 2、再乘 2，就得到原来的钱数。算完可以正着验证一遍，三次减半后是否正好剩 {left} 元。",
+    "difficulty": 3,
+    "unit": "元"
+  },
+  {
+    "id": "fp_percent_04",
+    "knowledge_id": "percent_word_problem",
+    "slot": "judge",
+    "stem": "甲数比乙数多 25%，那么乙数就比甲数少 25%。（　　）",
+    "answer_expr": "0",
+    "answer_display": "×",
+    "params": null,
+    "solution": "两次比较的单位一不同。设乙数为 100，甲数比乙数多 25% 则甲数为 125。反过来看乙数比甲数少多少，要以甲数 125 为单位一，算得 (125 − 100) ÷ 125 = 20%，不是 25%。所以打叉。这类题一定要先明确单位一是谁。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "fp_percent_05",
+    "knowledge_id": "percent_change",
+    "slot": "solve",
+    "stem": "某商店把一件衣服按成本价提高 {a}% 后标价，又按标价打 {z} 折出售，结果每件仍获利 {profit} 元。这件衣服的成本价是多少元？",
+    "answer_expr": "round({profit} / ((1 + {a} / 100) * {z} / 10 - 1), 2)",
+    "answer_display": "{ans} 元",
+    "params": {
+      "a": {"type": "choice", "from": [40, 50, 60, 80, 100]},
+      "z": {"type": "choice", "from": [7, 8, 9]},
+      "profit": {"type": "choice", "from": [20, 40, 60, 80, 100]}
+    },
+    "solution": "设成本价为 x 元。按成本提高 {a}% 得到标价，打 {z} 折就是以标价的十分之 {z} 出售，售价用标价乘 {z}/10 表示；再用售价减成本等于利润 {profit} 建立方程。解这个方程即得成本价。打折就是按标价的十分之几出售，这条换算必须记牢。",
+    "difficulty": 5,
+    "unit": "元"
+  }
+]

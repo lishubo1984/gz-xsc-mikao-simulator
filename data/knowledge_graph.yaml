@@ -1,0 +1,680 @@
+# =============================================================================
+# 广州小升初（民校密考 / 联考）数学知识图谱
+# -----------------------------------------------------------------------------
+# 【数据来源 · 务必保留】
+#   1. 广州奥数网《广州市小升初数学考试知识点分值分配》—— 近六年 13/15/16 所民校
+#      大联盟试卷统计，六大模块分值占比（本文件 modules[].target_ratio 的直接依据）
+#      http://gz.aoshu.com/e/20130122/50fe39f09c0f8_2.shtml
+#   2. 查字典小升初《广州往届小升初民校考试题型分析》—— 题型分类（填空/选择/判断/
+#      计算/应用/附加）与大联盟、小联盟、中大附中的难度差异
+#      https://xk.chazidian.com/zixun-130985/
+#   3. 历年小升初试卷分析（数学·广州）—— 各题型内部细分考点清单
+#      https://www.sxydy.com/post/shijuan/634fb4f8b91bd4f9d5867015b8b8fb47.html
+#
+# 【诚实声明】
+#   本图谱是依据上述公开教研分析重建的"知识点骨架 + 目标占比"，
+#   **不是任何一年真题的原卷**。题目本体为按该骨架编写的原创仿真题。
+# =============================================================================
+
+meta:
+  name: 广州小升初密考数学知识图谱
+  version: "1.0"
+  region: 广州
+  stage: 小升初（六年级）
+  paper_duration_minutes: 100
+  paper_total_score: 100
+
+# -----------------------------------------------------------------------------
+# 六大模块及其目标分值占比（合计 100）
+# 出卷引擎以此为目标做配额分配，体检器校验实际偏差 <= tolerance
+# -----------------------------------------------------------------------------
+modules:
+  - id: number_algebra
+    name: 数与代数
+    target_ratio: 30
+    tolerance: 3
+    desc: 数的读写改写、近似数、比较大小、循环小数、简便运算、式与方程、公因数公倍数、单位换算
+
+  - id: fraction_percent
+    name: 分数与百分数应用
+    target_ratio: 30
+    tolerance: 3
+    desc: 分百应用题、工程问题、浓度问题、利润折扣、利息、单位"1"与还原问题
+
+  - id: travel
+    name: 行程问题
+    target_ratio: 12
+    tolerance: 3
+    desc: 相遇追及、环形跑道、顺水行船、与分百/比例结合的行程综合
+
+  - id: geometry
+    name: 空间与图形
+    target_ratio: 10
+    tolerance: 3
+    desc: 平面图形面积、圆与扇形、组合图形（割补/阴影）、圆柱圆锥、立体图形表面积体积、比例尺
+
+  - id: ratio_proportion
+    name: 比和比例
+    target_ratio: 10
+    tolerance: 3
+    desc: 比的意义与性质、比例的基本性质、比例尺、正反比例、按比例分配
+
+  - id: misc_comprehensive
+    name: 其他综合应用
+    target_ratio: 8
+    tolerance: 3
+    desc: 植树问题、鸡兔同笼、抽屉原理、平均数、加乘原理与枚举、容斥原理、统计与可能性、方案最优化
+
+# -----------------------------------------------------------------------------
+# 知识点节点
+#   id        全局唯一，题模板通过 knowledge_id 挂到节点上
+#   prereq    前置知识点 id 列表 —— 构成"知识链"，错题据此回溯薄弱环节的根
+#   difficulty 1-5（1 基础概念 / 2 直接应用 / 3 综合 / 4 灵活 / 5 压轴）
+#   frequency high|mid|low  真题出现频次（依据来源 1/2/3 的人工整理，非机器统计）
+#   slots     该知识点适合出现的题型
+# -----------------------------------------------------------------------------
+nodes:
+
+  # ============ 数与代数 30% ============
+  - id: num_notation
+    name: 数的读写与改写
+    module: number_algebra
+    prereq: []
+    difficulty: 1
+    frequency: high
+    slots: [fill, judge, choice]
+    points:
+      - 亿以内数的读法写法，数位顺序表
+      - 改写成"万""亿"作单位的数
+      - 省略末尾用四舍五入求近似数
+
+  - id: decimal_fraction_pct_convert
+    name: 小数分数百分数互化与比较
+    module: number_algebra
+    prereq: []
+    difficulty: 1
+    frequency: high
+    slots: [fill, choice, judge]
+    points:
+      - 小数/分数/百分数三者互化
+      - 分数大小的比较（通分、化小数、交叉相乘）
+      - 循环小数的认识
+
+  - id: divisibility
+    name: 数的整除特征
+    module: number_algebra
+    prereq: []
+    difficulty: 1
+    frequency: high
+    slots: [fill, judge, choice]
+    points:
+      - 能被 2、3、5 整除的数的特征
+      - 同时满足多个整除条件的数
+
+  - id: prime_composite
+    name: 质数与合数
+    module: number_algebra
+    prereq: [divisibility]
+    difficulty: 2
+    frequency: high
+    slots: [fill, judge, choice]
+    points:
+      - 质数/合数/奇数/偶数的意义与性质
+      - 最小的质数、最小的合数、唯一的偶质数
+
+  - id: gcd_lcm
+    name: 最大公因数与最小公倍数
+    module: number_algebra
+    prereq: [prime_composite]
+    difficulty: 2
+    frequency: high
+    slots: [fill, choice]
+    points:
+      - 用短除法/分解质因数求最大公因数与最小公倍数
+      - 已知最大公因数反求最小公倍数
+      - 结合分公质因数的比与比例的考查
+
+  - id: unit_conversion
+    name: 单位换算
+    module: number_algebra
+    prereq: []
+    difficulty: 1
+    frequency: mid
+    slots: [fill, choice]
+    points:
+      - 长度/面积/体积/质量/时间单位进率
+      - 复合单位换算
+
+  - id: four_mixed_ops
+    name: 四则混合运算
+    module: number_algebra
+    prereq: []
+    difficulty: 2
+    frequency: high
+    slots: [calc]
+    points:
+      - 分数、小数、整数混合运算
+      - 含括号的运算顺序
+      - 直接写出得数（口算）
+
+  - id: simple_calc
+    name: 简便运算
+    module: number_algebra
+    prereq: [four_mixed_ops]
+    difficulty: 3
+    frequency: high
+    slots: [calc]
+    points:
+      - 乘法分配律及其逆用
+      - 凑整、补数、重复数（如 999×222+333×334）
+      - 分数裂项
+      - 提取公因数
+
+  - id: equation_solve
+    name: 解方程
+    module: number_algebra
+    prereq: [decimal_fraction_pct_convert]
+    difficulty: 2
+    frequency: high
+    slots: [calc]
+    points:
+      - 含分数的方程
+      - 含有比例的方程的求解
+      - 分数、比、除法三者之间的相互转化
+
+  - id: column_calc
+    name: 列式计算与列方程计算
+    module: number_algebra
+    prereq: [equation_solve]
+    difficulty: 3
+    frequency: mid
+    slots: [calc]
+    points:
+      - 根据文字叙述列综合算式
+      - 用方程求某数
+
+  - id: number_pattern
+    name: 数列数表与找规律
+    module: number_algebra
+    prereq: []
+    difficulty: 3
+    frequency: mid
+    slots: [fill, choice]
+    points:
+      - 等差、等比型数列
+      - 图形中点阵的规律（中大附中偏好）
+
+  - id: estimation
+    name: 估算与近似取位
+    module: number_algebra
+    prereq: [decimal_fraction_pct_convert]
+    difficulty: 2
+    frequency: mid
+    slots: [choice, judge]
+    points:
+      - 四舍五入的应用
+      - 估算结果的数量级
+
+  # ============ 分数与百分数应用 30% ============
+  - id: unit_one
+    name: 单位"1"与分率
+    module: fraction_percent
+    prereq: [decimal_fraction_pct_convert]
+    difficulty: 2
+    frequency: high
+    slots: [fill, judge, solve]
+    points:
+      - 找准单位"1"
+      - 已知单位"1"求部分；已知部分求单位"1"
+      - 分数除法中的逆运算
+
+  - id: fraction_word_problem
+    name: 分数应用题
+    module: fraction_percent
+    prereq: [unit_one]
+    difficulty: 3
+    frequency: high
+    slots: [solve, fill, choice]
+    points:
+      - 求一个数是另一个数的几分之几
+      - 多（少）几分之几的应用
+      - 区分"三分之二"与"三分之二米"
+
+  - id: percent_word_problem
+    name: 百分数应用题
+    module: fraction_percent
+    prereq: [unit_one]
+    difficulty: 3
+    frequency: high
+    slots: [solve, fill, choice, judge]
+    points:
+      - 成活率、命中率、出勤率、合格率
+      - 求百分率与已知百分率反求
+      - 与生活实际结合的比例叙述
+
+  - id: percent_change
+    name: 增减百分点与折扣利润
+    module: fraction_percent
+    prereq: [percent_word_problem]
+    difficulty: 3
+    frequency: high
+    slots: [solve, choice]
+    points:
+      - 涨价/降价百分之几
+      - 打折（几折即十分之几）
+      - 利润率、成本与售价
+      - 最优化购物方案
+
+  - id: interest
+    name: 利息与存款
+    module: fraction_percent
+    prereq: [percent_word_problem]
+    difficulty: 2
+    frequency: mid
+    slots: [solve, fill, choice]
+    points:
+      - 利息 = 本金 × 利率 × 时间
+      - 本息合计
+      - 利息税（旧教材口径，标注为低频）
+
+  - id: concentration
+    name: 浓度问题
+    module: fraction_percent
+    prereq: [unit_one]
+    difficulty: 4
+    frequency: high
+    slots: [solve, extra]
+    points:
+      - 溶质、溶剂、溶液三者关系
+      - 加水稀释与加盐增浓
+      - 多次倒出倒入求浓度（大联盟附加题连续考到）
+
+  - id: engineering
+    name: 工程问题
+    module: fraction_percent
+    prereq: [unit_one]
+    difficulty: 4
+    frequency: high
+    slots: [solve]
+    points:
+      - 工作总量设为单位"1"
+      - 工作效率、工作时间、工作量三者关系
+      - 两队合作与中途停工
+      - 与分数结合的工程综合
+
+  - id: reverse_reasoning
+    name: 还原问题
+    module: fraction_percent
+    prereq: [fraction_word_problem]
+    difficulty: 3
+    frequency: mid
+    slots: [solve, fill]
+    points:
+      - 倒推还原（"简单还原"）
+      - 单位"1"变换后的逆运算
+
+  # ============ 行程 12% ============
+  - id: travel_basic
+    name: 速度时间与路程
+    module: travel
+    prereq: []
+    difficulty: 2
+    frequency: high
+    slots: [fill, choice, solve]
+    points:
+      - 速度 × 时间 = 路程
+      - 已知速度和路程比，求时间比
+
+  - id: travel_meet_chase
+    name: 相遇与追及
+    module: travel
+    prereq: [travel_basic]
+    difficulty: 4
+    frequency: high
+    slots: [solve, extra]
+    points:
+      - 相遇问题（速度和）
+      - 追及问题（速度差）
+      - 已知相遇时间与部分路程关系求全程
+
+  - id: travel_circular
+    name: 环形跑道
+    module: travel
+    prereq: [travel_meet_chase]
+    difficulty: 5
+    frequency: mid
+    slots: [extra, solve]
+    points:
+      - 同向出发的追及圈数
+      - 相向出发的相遇次数
+
+  - id: travel_water_air
+    name: 顺水行船与风速
+    module: travel
+    prereq: [travel_basic]
+    difficulty: 3
+    frequency: mid
+    slots: [choice, solve]
+    points:
+      - 顺水速度 = 船速 + 水速
+      - 逆水速度 = 船速 - 水速
+
+  - id: travel_with_ratio
+    name: 行程中的比例法
+    module: travel
+    prereq: [travel_basic, ratio_meaning]
+    difficulty: 4
+    frequency: high
+    slots: [solve, extra]
+    points:
+      - 路程一定，速度与时间成反比
+      - 与百分数结合的行程综合
+
+  # ============ 空间与图形 10% ============
+  - id: plane_area
+    name: 平面图形面积
+    module: geometry
+    prereq: []
+    difficulty: 2
+    frequency: high
+    slots: [fill, choice, geometry]
+    points:
+      - 长方形、正方形、平行四边形、三角形、梯形的面积
+      - 已知面积反求底或高（已知面积求周长）
+
+  - id: circle_sector
+    name: 圆与扇形
+    module: geometry
+    prereq: [plane_area]
+    difficulty: 3
+    frequency: high
+    slots: [choice, fill, geometry]
+    points:
+      - 圆的周长与面积（π 取 3.14）
+      - 扇形面积与弧长
+      - 圆的分割
+
+  - id: composite_area
+    name: 组合图形与阴影面积
+    module: geometry
+    prereq: [circle_sector]
+    difficulty: 4
+    frequency: high
+    slots: [geometry, solve]
+    points:
+      - 割补法求阴影部分面积
+      - 圆的阴影部分
+      - 旋转、平移后的面积转化
+
+  - id: solid_volume
+    name: 立体图形表面积与体积
+    module: geometry
+    prereq: [plane_area]
+    difficulty: 3
+    frequency: high
+    slots: [fill, choice, geometry]
+    points:
+      - 长方体、正方体的表面积与体积
+      - 已知棱长和求体积
+
+  - id: cylinder_cone
+    name: 圆柱与圆锥
+    module: geometry
+    prereq: [solid_volume, circle_sector]
+    difficulty: 4
+    frequency: high
+    slots: [geometry, solve, fill]
+    points:
+      - 圆柱的表面积与体积
+      - 圆锥的体积（等底等高时是圆柱的 1/3）
+      - 已知体积反求圆锥的高
+      - 圆锥变形为正方体/长方体，借助水的高度求解
+
+  - id: geometry_transform
+    name: 图形变换与对称
+    module: geometry
+    prereq: [plane_area]
+    difficulty: 3
+    frequency: mid
+    slots: [choice, geometry, judge]
+    points:
+      - 平移、旋转、轴对称
+      - 简单图形的旋转操作
+
+  - id: scale_map
+    name: 比例尺
+    module: geometry
+    prereq: []
+    difficulty: 2
+    frequency: high
+    slots: [fill, choice]
+    points:
+      - 图上距离与实际距离的换算
+      - 求比例尺
+      - 铺地砖问题（题设与结论互调，涉及单位换算与面积）
+
+  - id: geometry_count
+    name: 几何计数
+    module: geometry
+    prereq: [plane_area]
+    difficulty: 4
+    frequency: low
+    slots: [fill, extra]
+    points:
+      - 数三角形的个数
+      - 网格中数长方形/正方形
+
+  # ============ 比和比例 10% ============
+  - id: ratio_meaning
+    name: 比的意义与化简
+    module: ratio_proportion
+    prereq: [gcd_lcm]
+    difficulty: 2
+    frequency: high
+    slots: [fill, judge, choice]
+    points:
+      - 比的前项后项与比值
+      - 化简比与求比值的区别
+      - 最简整数比
+
+  - id: proportion_property
+    name: 比例的基本性质
+    module: ratio_proportion
+    prereq: [ratio_meaning]
+    difficulty: 2
+    frequency: high
+    slots: [fill, choice, calc]
+    points:
+      - 内项之积等于外项之积
+      - 解比例方程
+
+  - id: ratio_distribution
+    name: 按比例分配
+    module: ratio_proportion
+    prereq: [proportion_property]
+    difficulty: 3
+    frequency: high
+    slots: [solve, fill, choice]
+    points:
+      - 已知总量与比求各部分
+      - 已知比例与其中一部分求总量
+
+  - id: direct_inverse_proportion
+    name: 正比例与反比例
+    module: ratio_proportion
+    prereq: [proportion_property]
+    difficulty: 3
+    frequency: high
+    slots: [judge, choice, fill]
+    points:
+      - 判断两个量成正比例还是反比例
+      - 用比例式表达数量关系
+
+  # ============ 其他综合 8% ============
+  - id: tree_planting
+    name: 植树问题
+    module: misc_comprehensive
+    prereq: []
+    difficulty: 3
+    frequency: mid
+    slots: [fill, solve]
+    points:
+      - 两端都栽 / 只栽一端 / 两端都不栽
+      - 封闭图形四周栽树
+
+  - id: chicken_rabbit
+    name: 鸡兔同笼
+    module: misc_comprehensive
+    prereq: [column_calc]
+    difficulty: 3
+    frequency: mid
+    slots: [solve, extra]
+    points:
+      - 假设法
+      - 用方程解
+
+  - id: pigeonhole
+    name: 抽屉原理
+    module: misc_comprehensive
+    prereq: []
+    difficulty: 4
+    frequency: mid
+    slots: [judge, extra]
+    points:
+      - 最简单的抽屉原理
+      - 摸球保证同色问题
+
+  - id: average_problem
+    name: 平均数问题
+    module: misc_comprehensive
+    prereq: [four_mixed_ops]
+    difficulty: 2
+    frequency: mid
+    slots: [fill, solve]
+    points:
+      - 移多补少
+      - 加权平均
+
+  - id: counting_principle
+    name: 加乘原理与枚举
+    module: misc_comprehensive
+    prereq: []
+    difficulty: 4
+    frequency: mid
+    slots: [choice, extra]
+    points:
+      - 简单枚举
+      - 加法原理与乘法原理
+      - 简单的排列组合
+
+  - id: inclusion_exclusion
+    name: 容斥原理（包容与排除）
+    module: misc_comprehensive
+    prereq: []
+    difficulty: 4
+    frequency: low
+    slots: [extra, choice]
+    points:
+      - 两个集合的容斥
+      - 重叠人数的计算
+
+  - id: stats_probability
+    name: 统计与可能性
+    module: misc_comprehensive
+    prereq: []
+    difficulty: 2
+    frequency: mid
+    slots: [choice, judge, fill]
+    points:
+      - 条形统计图与折线统计图
+      - 摸球的可能性大小
+
+# -----------------------------------------------------------------------------
+# 知识链：把上面的依赖网收敛成 6 条主线，供 UI 展示与错题归因
+# -----------------------------------------------------------------------------
+chains:
+  - id: chain_fraction
+    name: 分数链
+    path: [decimal_fraction_pct_convert, unit_one, fraction_word_problem, percent_word_problem, percent_change, concentration]
+    note: 这条链是广州密考的第一大户，断裂出现在哪一步就补哪一步
+
+  - id: chain_ratio
+    name: 比例链
+    path: [gcd_lcm, ratio_meaning, proportion_property, ratio_distribution, travel_with_ratio]
+
+  - id: chain_geometry
+    name: 几何链
+    path: [plane_area, circle_sector, composite_area, solid_volume, cylinder_cone]
+
+  - id: chain_travel
+    name: 行程链
+    path: [travel_basic, travel_meet_chase, travel_water_air, travel_circular]
+
+  - id: chain_engineering
+    name: 工程链
+    path: [unit_one, engineering, reverse_reasoning]
+
+  - id: chain_number_theory
+    name: 数论链
+    path: [divisibility, prime_composite, gcd_lcm, counting_principle]
+
+# -----------------------------------------------------------------------------
+# 卷面格局：100 分 / 100 分钟 / 38 题
+#   cell = 该题型在该模块上的题数
+#   推导出的模块实得分（对比 modules[].target_ratio，偏差全部 <= 3 分）：
+#     数与代数 30(目标30) | 分百应用 30(30) | 行程 14(12)
+#     图形 13(10) | 比和比例 7(10) | 其他综合 6(8)
+# -----------------------------------------------------------------------------
+paper_layout:
+  total_score: 100
+  total_questions: 38
+  duration_minutes: 100
+  sections:
+    - slot: fill
+      title: 一、填空题
+      per_score: 2
+      order: 1
+      quota: {number_algebra: 3, fraction_percent: 2, travel: 1, ratio_proportion: 2, misc_comprehensive: 2}
+      instruction: 把答案直接填在题目的括号里。
+
+    - slot: choice
+      title: 二、选择题
+      per_score: 2
+      order: 2
+      quota: {fraction_percent: 5, travel: 1, geometry: 1, ratio_proportion: 1}
+      instruction: 在每小题给出的四个选项中，只有一项是符合题目要求的，请把正确选项的字母填在括号里。
+
+    - slot: judge
+      title: 三、判断题
+      per_score: 1
+      order: 3
+      quota: {fraction_percent: 1, geometry: 1, ratio_proportion: 1, misc_comprehensive: 2}
+      instruction: 对的打"√"，错的打"×"。
+
+    - slot: calc
+      title: 四、计算题
+      per_score: 3
+      order: 4
+      quota: {number_algebra: 8}
+      instruction: 能简算的要简算，写出主要过程。
+
+    - slot: geometry
+      title: 五、图形与几何
+      per_score: 5
+      order: 5
+      quota: {geometry: 2}
+      instruction: 写出必要的思考过程，π 取 3.14。
+
+    - slot: solve
+      title: 六、解决问题
+      per_score: 5
+      order: 6
+      quota: {fraction_percent: 3, travel: 1}
+      instruction: 写出完整的解答过程。
+
+    - slot: extra
+      title: 七、附加题
+      per_score: 5
+      order: 7
+      quota: {travel: 1}
+      instruction: 本题为拉分题，写出解题思路可得部分分数。

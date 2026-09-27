@@ -1,0 +1,201 @@
+// 广州小升初密考题库 · 补充卷（按 diag_generate.py 实测的缺口定向补齐）
+//
+// 缺口来源（实测数据）：
+//   choice / fraction_percent   有 3 题，需要 5 题  -> 补 3 题
+//   judge  / geometry           有 0 题，需要 1 题  -> 补 2 题
+//   judge  / misc_comprehensive 有 1 题，需要 2 题  -> 补 2 题
+//   calc   / number_algebra     有 4 题，需要 8 题  -> 补 5 题
+// 补齐后每个格子都留有余量，重抽时不会因题量不足而卡死。
+[
+  {
+    "id": "sup_choice_fp_01",
+    "knowledge_id": "percent_word_problem",
+    "slot": "choice",
+    "stem": "一件商品打八折后的价格是 {deal} 元，这件商品的原价是（　　）元。",
+    "answer_expr": "round({deal} / 0.8, 2)",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "deal": {"type": "choice", "from": [64, 80, 96, 120, 160, 200]}
+    },
+    "solution": "打八折表示现价是原价的 80%。已知现价求原价，要用除法：原价 = 现价 ÷ 80%。列式 {deal} ÷ 0.8 即得答案。记住两句口诀：求现价用乘法，求原价用除法，关键看单位一是谁。",
+    "difficulty": 3,
+    "unit": "元"
+  },
+  {
+    "id": "sup_choice_fp_02",
+    "knowledge_id": "fraction_word_problem",
+    "slot": "choice",
+    "stem": "把一根 {len_m} 米长的绳子平均剪成 {n} 段，每段是全长的（　　）。",
+    "answer_expr": "Fraction(1, {n})",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "len_m": {"type": "choice", "from": [3, 4, 5, 6, 8]},
+      "n": {"type": "choice", "from": [3, 4, 5, 6, 8]},
+      "len_m_guard": {"type": "int", "min": 1, "max": 1}
+    },
+    "solution": "题目问的是每段占全长的几分之几，这是分率问题，与绳子的具体长度无关。把全长看作单位一，平均分成 {n} 段，每段就是 1/{n}。如果问的是每段长多少米，那就用 {len_m} ÷ {n} 算。同一道题问法不同，答案性质完全不同，一定要看清问的是分率还是具体数量。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "sup_choice_fp_03",
+    "knowledge_id": "percent_change",
+    "slot": "choice",
+    "stem": "某种商品先提价 {a}%，随后又降价 {a}%，现在的价格与原价相比（　　）。",
+    "answer_expr": "1",
+    "answer_display": "{correct}",
+    "choices_expr": ["比原价低", "比原价高", "与原价相同", "无法确定"],
+    "params": {
+      "a": {"type": "choice", "from": [10, 15, 20, 25, 30]}
+    },
+    "solution": "设原价为 100 元。先提价 {a}% 后价格变为原来的 （1 + {a}%）倍；再降价 {a}%，是以提价后的价格为单位一，用这个价格乘 （1 − {a}%）。两次相乘的结果是 （1 + {a}%）（1 − {a}%） = 1 − {a}%² / 10000，它一定小于 1。所以最终价格比原价低，选比原价低。这是先升后降的固定结论。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "sup_calc_na_01",
+    "knowledge_id": "simple_calc",
+    "slot": "calc",
+    "stem": "简算：{a} × {b} + {a} × {c}",
+    "answer_expr": "{a} * ({b} + {c})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "choice", "from": [12, 15, 18, 24, 25, 36]},
+      "b": {"type": "choice", "from": [8, 12, 16, 24, 32]},
+      "c": {"type": "choice", "from": [8, 12, 16, 24, 32]}
+    },
+    "solution": "两项都含有相同的因数 {a}，把 {a} 提取出来，剩下 {b} 与 {c} 相加，这就是乘法分配律的逆用。先算括号内的和，再与 {a} 相乘，比分开算再相加简便得多。判断能否简算，就看两项有没有相同的因数。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "sup_calc_na_02",
+    "knowledge_id": "four_mixed_ops",
+    "slot": "calc",
+    "stem": "计算：[[{a}/{b}]] + [[{c}/{d}]]",
+    "answer_expr": "Fraction({a}, {b}) + Fraction({c}, {d})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "int", "min": 1, "max": 7},
+      "b": {"type": "int", "min": 3, "max": 9},
+      "c": {"type": "int", "min": 1, "max": 7},
+      "d": {"type": "int", "min": 3, "max": 9}
+    },
+    "constraints": ["math.gcd({a}, {b}) == 1", "math.gcd({c}, {d}) == 1"],
+    "solution": "异分母分数相加，先通分再计算。找两个分母 {b} 和 {d} 的最小公倍数作公分母，把两个分数分别化成同分母分数，分子相加，最后能约分的要约成最简分数。结果应写成最简分数或带分数的形式。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "sup_calc_na_03",
+    "knowledge_id": "equation_solve",
+    "slot": "calc",
+    "stem": "解方程：{a}x + {b}x = {c}",
+    "answer_expr": "Fraction({c}, {a} + {b})",
+    "answer_display": "x = {ans}",
+    "params": {
+      "a": {"type": "int", "min": 2, "max": 9},
+      "b": {"type": "int", "min": 2, "max": 9},
+      "c": {"type": "int", "min": 10, "max": 90}
+    },
+    "solution": "方程左边两项都含未知数 x，可以先合并同类项：{a}x + {b}x = （{a} + {b}）x。这样原方程就变成未知数项等于 {c}，两边同除以未知数的系数即得 x。先把未知数项合并是解这类方程的第一步。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "sup_calc_na_04",
+    "knowledge_id": "simple_calc",
+    "slot": "calc",
+    "stem": "简算：{a} × 99 + {a}",
+    "answer_expr": "{a} * 100",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "choice", "from": [23, 34, 45, 56, 67, 78, 89]}
+    },
+    "solution": "单独的 {a} 可以看作 {a} × 1，这样两项都含有因数 {a}，提取出来得 {a} × （99 + 1） = {a} × 100。把隐藏的 1 补出来是简算的常用技巧，看到「乘 99 加自身」就要立刻想到凑成整百。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "sup_calc_na_05",
+    "knowledge_id": "column_calc",
+    "slot": "calc",
+    "stem": "列式计算：{a} 减去 {b} 的 [[{c}/{d}]]，差是多少？",
+    "answer_expr": "Fraction({a}) - Fraction({b} * {c}, {d})",
+    "answer_display": "{ans}",
+    // 「甲减去乙的几分之几」必须保证结果为正，否则差出现负数，
+    // 审计实测有 11.3% 的参数组合会给出负答案。
+    "params": {
+      "a": {"type": "int", "min": 5, "max": 20},
+      "b": {"type": "int", "min": 4, "max": 16},
+      "c": {"type": "int", "min": 1, "max": 5},
+      "d": {"type": "int", "min": 2, "max": 8}
+    },
+    "constraints": [
+      "Fraction({a}) > Fraction({b} * {c}, {d})",
+      "math.gcd({c}, {d}) == 1"
+    ],
+    "solution": "注意「{b} 的 {c}/{d}」求的是 {b} 乘 {c}/{d}，先算乘法部分，再用 {a} 去减它。列式时要把「{b} 的 {c}/{d}」看作一个整体，最后结果化成最简分数。列式计算的关键是理解文字叙述中的运算顺序，特别是「的」表示乘法。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "sup_judge_gm_01",
+    "knowledge_id": "circle_sector",
+    "slot": "judge",
+    "stem": "把一个圆的半径扩大到原来的 2 倍，它的周长也扩大到原来的 2 倍，面积扩大到原来的 4 倍。（　　）",
+    "answer_expr": "1",
+    "answer_display": "√",
+    "params": null,
+    "solution": "圆的周长 = 2πr，与半径成正比例，半径扩大 2 倍周长也扩大 2 倍。圆的面积 = πr²，与半径的平方成正比例，半径扩大 2 倍，面积就扩大 2 的平方即 4 倍。两个结论都正确，所以打对勾。这是圆的周长面积最常考的一条性质。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "sup_judge_gm_02",
+    "knowledge_id": "composite_area",
+    "slot": "judge",
+    "stem": "两个面积相等的三角形，一定能拼成一个平行四边形。（　　）",
+    "answer_expr": "0",
+    "answer_display": "×",
+    "params": null,
+    "solution": "两个完全一样的三角形才能拼成一个平行四边形，而「面积相等」并不等于「完全一样」。面积相等的两个三角形，形状可能完全不同，无法拼合。所以这句话错，打叉。注意区分「面积相等」和「形状大小完全相同」这两个概念。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "sup_judge_mc_01",
+    "knowledge_id": "stats_probability",
+    "slot": "judge",
+    "stem": "抛一枚硬币，连续抛 5 次都是正面朝上，那么第 6 次反面朝上的可能性比正面大。（　　）",
+    "answer_expr": "0",
+    "answer_display": "×",
+    "params": null,
+    "solution": "每次抛硬币都是独立事件，前面出现什么结果不会影响后面的结果。硬币只有正反两面，第 6 次正面朝上和反面朝上的可能性始终各占一半，完全相同。所以这句话错，打叉。这是可能性问题中最典型的误区，被称为「赌徒谬误」。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "sup_judge_mc_02",
+    "knowledge_id": "tree_planting",
+    "slot": "judge",
+    "stem": "在一个圆形花坛的周围每隔 {gap} 米栽一棵花，如果花坛一周长 {len_m} 米，一共要栽 {n} 棵花。（　　）",
+    // 事故复盘：题干引用 {n}，params 里却叫 n_guard —— 每次渲染都残留占位符且恒为 √。
+    // 现在棵数由 expr 派生，并用 off 引入偏差让判断题有对有错（原来 100% 打勾毫无区分度）。
+    "answer_expr": "int({off} == 0)",
+    "answer_display": "√",
+    "params": {
+      "gap": {"type": "choice", "from": [4, 5, 6, 8, 10]},
+      "len_m": {"type": "choice", "from": [40, 60, 80, 100, 120]},
+      "off": {"type": "choice", "from": [0, 0, -1, 1]},
+      "true_n": {"type": "expr", "expr": "{len_m} // {gap}"},
+      "n": {"type": "expr", "expr": "{len_m} // {gap} + {off}"}
+    },
+    "constraints": ["{len_m} % {gap} == 0"],
+    "solution": "封闭图形（圆、正方形等）周围栽树，因为首尾重合，棵数正好等于间隔数，不像直线那样要加一或减一。间隔数 = 周长 ÷ 间隔距离，本题 {len_m} ÷ {gap} 得 {true_n} 棵，与题干说的 {n} 棵对照即可判断。这与「两端都栽要加一」形成对比，是植树问题里最容易混淆的一点。",
+    "difficulty": 3,
+    "unit": null
+  }
+]

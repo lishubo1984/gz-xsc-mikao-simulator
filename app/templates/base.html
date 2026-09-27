@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ app_name }}{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/app.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo"></span>
+    <div>
+      <div class="brand-name">{{ app_name }}</div>
+      <div class="brand-sub">广州 · 六年级 · 100 分钟 / 100 分</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/">首页</a>
+    <a href="/#chains">知识链</a>
+  </nav>
+</header>
+<main class="wrap">
+{% block body %}{% endblock %}
+</main>
+<footer class="foot">
+  题目为按广州小升初公开教研骨架编写的<b>原创仿真题</b>，非真题原文；答案由代码算出并逐项体检。
+</footer>
+{% block scripts %}{% endblock %}
+</body>
+</html>

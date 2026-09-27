@@ -1,0 +1,161 @@
+/* 答题页 / 报告页 / 答案页共用。
+   核心取向：试卷正文区纯白底黑字 + 楷体/宋体衬线字号略大，
+   长时间作答不易疲劳；控件才用青橙点缀。 */
+.exam-bar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 10px 24px; background: #fff;
+  border-bottom: 2px solid var(--cyan);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.eb-title { font-weight: 700; font-size: 15px; }
+.eb-sub { font-size: 12.5px; color: var(--dim); }
+.clock {
+  font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--cyan-dark); letter-spacing: 1px;
+}
+.clock.danger { color: var(--warn); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .45; } }
+.clock-lab { font-size: 12px; color: var(--dim); text-align: center; }
+.prog-wrap { width: 190px; }
+.prog { height: 7px; background: #e8eef1; border-radius: 4px; overflow: hidden; }
+.prog-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--cyan), var(--orange)); transition: width .25s; }
+.prog-lab { font-size: 12px; color: var(--dim); text-align: right; margin-top: 3px; }
+.eb-right { display: flex; align-items: center; gap: 16px; }
+
+/* 试卷正文 */
+.sec { margin: 26px 0 0; background: #fff; border-radius: 12px; padding: 20px 26px 26px;
+       box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.sec-title {
+  font-size: 18px; margin: 0 0 6px; color: var(--cyan-dark);
+  border-bottom: 1px dashed var(--line); padding-bottom: 8px;
+}
+.sec-score { float: right; font-size: 13px; color: var(--dim); font-weight: 400; }
+.sec-inst { color: var(--dim); font-size: 13.5px; margin: 0 0 16px; }
+
+.q { padding: 14px 0 16px; border-bottom: 1px dotted var(--line); }
+.q:last-child { border-bottom: none; }
+.q-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.q-seq { font-weight: 700; font-size: 15px; color: var(--ink); min-width: 26px; }
+.q-score { font-size: 12px; color: var(--orange-dark); background: #fff4e6;
+           border-radius: 10px; padding: 1px 8px; }
+.q-tip { font-size: 12px; color: #9aa8b5; }
+.q-stem {
+  font-size: 16.5px; line-height: 2.05; color: #1a242e;
+  font-family: "Kaiti SC", "STKaiti", "楷体", "Songti SC", serif;
+}
+.q-fig { margin: 12px 0; text-align: center; }
+.q-fig svg { max-width: 360px; height: auto; background: #fbfdfd; border-radius: 8px; }
+
+/* 填空 */
+.blank {
+  display: inline-block; min-width: 86px; width: 96px; margin: 0 6px;
+  border: none; border-bottom: 1.5px solid var(--cyan);
+  background: transparent; text-align: center; font-size: 16px;
+  font-family: inherit; color: var(--cyan-dark); padding: 2px 4px;
+}
+.blank:focus { outline: none; border-bottom-color: var(--orange); background: #fffaf2; }
+.blank.wide { margin-left: 14px; }
+
+/* 分数渲染 [[a/b]] */
+.frac { display: inline-block; vertical-align: middle; text-align: center; margin: 0 3px; line-height: 1.15; }
+.frac .num, .frac .den { display: block; padding: 0 5px; font-size: .92em; }
+.frac .num { border-bottom: 1.2px solid currentColor; }
+.mixed { display: inline-block; vertical-align: middle; }
+.mixed .frac { margin-left: 2px; }
+.math-inline { font-style: italic; }
+
+/* 选择/判断 */
+.q-choices { margin-top: 12px; display: grid; gap: 8px; }
+.choice {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: #fcfdfd;
+}
+.choice:hover { border-color: var(--cyan); }
+.choice input { accent-color: var(--cyan); width: 16px; height: 16px; }
+.choice .letter { font-weight: 700; color: var(--cyan-dark); width: 16px; }
+.choice .ctext { font-size: 15.5px; }
+.choice.picked { border-color: var(--orange); background: #fff8ee; }
+
+.q-judge { margin-top: 12px; display: flex; gap: 12px; }
+.judge-btn {
+  padding: 8px 22px; border: 1.5px solid var(--line); border-radius: 8px;
+  background: #fff; cursor: pointer; font-size: 15px; font-family: inherit; color: var(--dim);
+}
+.judge-btn.picked { border-color: var(--orange); background: #fff4e6; color: var(--orange-dark); font-weight: 700; }
+
+/* 主观题作答区 */
+.q-work { margin-top: 12px; }
+.scratch {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px;
+  font-family: inherit; font-size: 14.5px; resize: vertical; background: #fcfdfd; color: var(--ink);
+}
+.scratch:focus { outline: none; border-color: var(--cyan); }
+.ans-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.ans-row label { font-size: 14px; color: var(--dim); }
+.ans-input {
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px;
+  font-size: 15px; min-width: 220px; font-family: inherit;
+}
+.ans-input:focus { outline: none; border-color: var(--cyan); }
+
+.save-tip {
+  position: fixed; right: 22px; bottom: 22px; z-index: 30;
+  padding: 8px 16px; border-radius: 20px; font-size: 13px;
+  background: rgba(0,127,127,.92); color: #fff; opacity: 0; transition: opacity .3s;
+}
+.save-tip.show { opacity: 1; }
+
+/* 报告页 */
+.rep-hero {
+  display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center;
+  background: #fff; border-radius: 14px; padding: 26px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06); border-left: 4px solid var(--cyan);
+}
+.score-ring { text-align: center; }
+.score-big { font-size: 52px; font-weight: 800; color: var(--cyan-dark); line-height: 1.1; }
+.score-big small { font-size: 20px; color: var(--dim); font-weight: 400; }
+.score-rate { font-size: 14px; color: var(--orange-dark); }
+.rep-sum h1 { margin: 0 0 6px; font-size: 23px; }
+.rep-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.warn { color: var(--warn); }
+
+.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.mod-card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.mod-name { font-size: 14px; font-weight: 600; }
+.mod-num { font-size: 24px; font-weight: 700; color: var(--cyan-dark); }
+.mod-num small { font-size: 13px; color: var(--dim); font-weight: 400; }
+.mod-bar { height: 6px; background: #e8eef1; border-radius: 3px; margin: 8px 0 6px; }
+.mod-bar span { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--cyan), var(--orange)); }
+.mod-foot { font-size: 12.5px; color: var(--dim); }
+
+.wrong-item { border: 1px solid #ffe0e0; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; background: #fffbfb; }
+.wi-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.wi-flag { font-size: 12px; color: var(--warn); font-weight: 600; }
+.wi-stem { font-size: 16px; line-height: 1.95; font-family: "Kaiti SC", "STKaiti", "楷体", serif; }
+.wi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+.wi-grid label { font-size: 12.5px; color: var(--dim); display: block; }
+.wi-wrong { color: var(--warn); font-size: 15px; font-weight: 600; }
+.wi-right { color: var(--ok); font-size: 15px; font-weight: 600; }
+.wi-sol { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; }
+.wi-sol label { font-size: 12.5px; color: var(--dim); }
+.wi-sol p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.85; }
+
+/* 答案页 */
+.ans-head { background: #fff; border-radius: 14px; padding: 22px 26px; margin-bottom: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06); border-left: 4px solid var(--orange); }
+.ans-head h1 { margin: 0 0 6px; font-size: 21px; }
+.ans-tbl { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden;
+           box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 14.5px; }
+.ans-tbl th { background: #f3f8f8; color: var(--dim); font-size: 13px; padding: 10px 12px; text-align: left; }
+.ans-tbl td { padding: 10px 12px; border-top: 1px solid var(--line); vertical-align: top; }
+.seq-cell { font-weight: 700; width: 46px; }
+.ans-cell { color: var(--cyan-dark); font-weight: 700; width: 150px; }
+.sol-cell { line-height: 1.85; }
+
+@media print {
+  .topbar, .foot, .exam-bar, .rep-actions, .ans-head .btn { display: none !important; }
+  body { background: #fff; }
+  .wrap { max-width: none; padding: 0; }
+  .wrong-item, .mod-card, .sec { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+}

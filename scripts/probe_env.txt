@@ -1,0 +1,15 @@
+=== A. GTK 运行时（WeasyPrint 的硬依赖）===
+  MISS   libgobject-2.0-0.dll 在所有候选路径均未找到 -> WeasyPrint 需额外安装 GTK runtime
+=== B. 本机浏览器（Playwright 可走系统通道，免下载内核）===
+  FOUND  Edge: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+  FOUND  Chrome: C:\Program Files\Google\Chrome\Application\chrome.exe
+=== C. Playwright 是否已安装 ===
+  MISS   playwright 未安装
+=== D. CairoSVG / reportlab 可用性 ===
+  MISS   cairosvg: OSError: no library called "cairo-2" was found
+no library called "cairo" was found
+no lib
+  MISS   reportlab: ModuleNotFoundError: No module named 'reportlab'
+=== E. 磁盘剩余空间（C 盘 / D 盘）===
+  C:\  free=29.4 GB  total=252.8 GB
+  D:\  free=196.3 GB  total=700.0 GB

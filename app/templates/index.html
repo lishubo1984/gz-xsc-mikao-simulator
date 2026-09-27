@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} · 首页{% endblock %}
+{% block body %}
+
+<section class="hero">
+  <div class="hero-main">
+    <h1>生成一份广州小升初密考模拟卷</h1>
+    <p class="lead">按七大题型自动组卷 · 答案由代码算出 · 出卷即体检 · 答完自动定位薄弱知识链</p>
+    <form id="genForm" class="gen-form">
+      <input type="text" id="student" value="练习者" placeholder="孩子姓名" maxlength="20">
+      <input type="number" id="seed" placeholder="种子（留空随机）" min="1">
+      <button type="submit" class="btn primary" id="genBtn">生成试卷</button>
+    </form>
+    <div id="genMsg" class="msg"></div>
+  </div>
+  <div class="hero-side">
+    <div class="stat-card">
+      <div class="stat-num">100<small>分</small></div>
+      <div class="stat-lab">卷面总分</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">100<small>分钟</small></div>
+      <div class="stat-lab">考试时长</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">38<small>题</small></div>
+      <div class="stat-lab">七大题型</div>
+    </div>
+  </div>
+</section>
+
+{% if weak %}
+<section class="panel">
+  <h2>历史薄弱知识点</h2>
+  <div class="chips">
+    {% for w in weak %}
+      <span class="chip warn">
+        <b>{{ w.name }}</b>
+        <i>{{ module_labels.get(w.module, w.module) }} · 错 {{ w.count }} 次</i>
+      </span>
+    {% endfor %}
+  </div>
+  <p class="hint">薄弱点会顺着前置依赖往上游回溯 —— 错的题只有表象，真正要补的是断掉的那环。</p>
+</section>
+{% endif %}
+
+<section class="panel" id="chains">
+  <h2>知识链</h2>
+  <p class="hint">把分散的知识点串成链条：断在哪一步，就补哪一步。以下是按广州近年公开教研资料整理的六条主链。</p>
+  <div class="chain-grid">
+    {% for c in chains %}
+      <div class="chain-card">
+        <div class="chain-name">{{ c.name }}</div>
+        <div class="chain-path">
+          {% for step in c.path %}
+            <span class="node" title="{{ nodes.get(step, {}).get('name', step) }}">{{ nodes.get(step, {}).get('name', step) }}</span>
+            {% if not loop.last %}<span class="arrow">→</span>{% endif %}
+          {% endfor %}
+        </div>
+        <div class="chain-note">{{ c.note }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <h2>最近的试卷</h2>
+  {% if papers %}
+  <table class="tbl">
+    <thead><tr><th>标题</th><th>生成时间</th><th>作答次数</th><th>最高分</th><th></th></tr></thead>
+    <tbody>
+      {% for p in papers %}
+      <tr>
+        <td>{{ p.title }}</td>
+        <td class="dim">{{ p.created_at }}</td>
+        <td>{{ p.attempt_cnt }}</td>
+        <td>{% if p.best_score is not none %}<b class="score">{{ p.best_score }}</b>{% else %}<span class="dim">未作答</span>{% endif %}</td>
+        <td><a class="btn small" href="/answers/{{ p.id }}">看答案</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">还没有生成过试卷。点上面的「生成试卷」开始。</p>
+  {% endif %}
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('genForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('genBtn');
+  const msg = document.getElementById('genMsg');
+  btn.disabled = true; btn.textContent = '正在出卷并体检…';
+  msg.className = 'msg'; msg.textContent = '';
+  try {
+    const seedRaw = document.getElementById('seed').value.trim();
+    const body = {
+      student: document.getElementById('student').value.trim() || '练习者',
+      seed: seedRaw ? parseInt(seedRaw, 10) : null
+    };
+    const res = await fetch('/api/papers', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || '生成失败');
+    msg.className = 'msg ok';
+    msg.textContent = `出卷完成：${data.question_count} 题 / ${data.total_score} 分，体检通过，用时 ${data.elapsed_ms} ms，正在进入答题…`;
+    setTimeout(() => { location.href = '/paper/' + data.attempt_id; }, 700);
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = '生成失败：' + err.message;
+    btn.disabled = false; btn.textContent = '生成试卷';
+  }
+});
+</script>
+{% endblock %}

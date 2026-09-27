@@ -1,0 +1,256 @@
+// 广州小升初密考题库 · 数与代数（目标 30 分）
+// 说明：题干中的 {var} 为参数占位符，[[a/b]] 为分数标记，答案由 answer_expr 求值。
+// 本文件由 Python 的 json 模块读取，注释行在加载前会被剥离。
+[
+  {
+    "id": "na_notation_01",
+    "knowledge_id": "num_notation",
+    "slot": "fill",
+    "stem": "一个数由 {yi} 个亿、{wan} 个万、{qian} 个千和 {ge} 个一组成，这个数写作（　　），省略「万」后面的尾数约是（　　）万。",
+    // 数与代数：所有第二空答案一律用 type=expr 派生，不允许凭空写 {xxx}。
+    // 事故复盘：早期直接写 {wan_part}/{pct}/{mins} 却没人赋值，
+    // 每次渲染都残留占位符；现已由 scripts/lint_bank.py 静态拦截。
+    "answer_expr": "{yi} * 100000000 + {wan} * 10000 + {qian} * 1000 + {ge}",
+    // 答案里不再重复"约"和"万"：题干已写"省略「万」后面的尾数约是（　　）万"，
+    // 学生在空中只会填数字。实测答案写成"约 80092 万"会被判分器判错 —— 我们在冤枉做对的学生。
+    "answer_display": "{ans}；{wan_part}",
+    "params": {
+      "yi": {"type": "int", "min": 1, "max": 9},
+      "wan": {"type": "int", "min": 10, "max": 99},
+      "qian": {"type": "int", "min": 1, "max": 9},
+      "ge": {"type": "int", "min": 1, "max": 9},
+      // 省略「万」后面的尾数要看千位四舍五入：千位 ≥5 则万位进 1
+      "wan_part": {"type": "expr", "expr": "{yi} * 10000 + {wan} + int({qian} >= 5)"}
+    },
+    "solution": "按数位顺序表逐位写数：{yi} 个亿写在亿位，{wan} 个万写在万级，{qian} 个千写在千位，{ge} 个一写在个位。省略「万」后面的尾数，要看千位上的数 {qian}，按四舍五入决定取舍，再改写成用万作单位的数。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "na_convert_01",
+    "knowledge_id": "decimal_fraction_pct_convert",
+    "slot": "fill",
+    "stem": "把 {dec} 化成最简分数是（　　），化成百分数是（　　）%。",
+    "answer_expr": "Fraction(int({dec} * 100), 100)",
+    "answer_display": "{ans}；{pct}%",
+    "params": {
+      "dec": {"type": "choice", "from": [0.24, 0.4, 0.48, 0.6, 0.64, 0.75, 0.8, 0.85]},
+      "pct": {"type": "expr", "expr": "int(round({dec} * 100))"}
+    },
+    "solution": "先把小数化成分母是 100 的分数，再约成最简分数；化成百分数只需把小数点向右移动两位并添上百分号。以 0.48 为例，写成 48/100，分子分母同时除以它们的最大公因数 4，得 12/25。",
+    "difficulty": 1,
+    "unit": "%"
+  },
+  {
+    "id": "na_divisibility_01",
+    "knowledge_id": "divisibility",
+    "slot": "choice",
+    "stem": "下面四个数中，能同时被 2、3、5 整除的是（　　）。",
+    "answer_expr": "{base}",
+    "answer_display": "{ans}",
+    // 答案必须由 slide expr 算出来，而不是"恰好排在第一个"。
+    // 事故复盘：旧写法把四个数各自随机取值并假定 a1 正确，
+    // 而 230、232 这类取值根本不能被 3 整除，等于出了错题却不报任何异常。
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    // 干扰项必须显式声明负例：自动派生会给出 base+900 之类，
+    // 而 900 本身也能被 2、3、5 整除，反而制造第二个正确答案。
+    // +2 破坏被 5 整除；+5 破坏被 2 整除；+4 破坏被 3 整除（各位和 +4）。
+    "distractor_expr": ["{base} + 2", "{base} + 5", "{base} + 4"],
+    "params": {
+      "base": {"type": "choice", "from": [450, 630, 870, 1230, 1560]}
+    },
+    "solution": "能同时被 2、3、5 整除的数必须同时满足：个位是 0（兼顾 2 和 5），且各位数字之和能被 3 整除。逐个检验：个位不是 0 的直接排除，是 0 的再算各位数字之和是否能被 3 整除。两条都满足的才是答案。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "na_prime_01",
+    "knowledge_id": "prime_composite",
+    "slot": "judge",
+    "stem": "所有的质数都是奇数，所有的偶数都是合数。（　　）",
+    "answer_expr": "0",
+    "answer_display": "×",
+    "params": null,
+    "solution": "两句话都要独立验证。质数 2 是偶数，所以「所有质数都是奇数」错；偶数 2 是质数、0 既不是质数也不是合数，所以「所有偶数都是合数」也错。两句都错，故打叉。",
+    "difficulty": 1,
+    "unit": null
+  },
+  {
+    "id": "na_gcd_01",
+    "knowledge_id": "gcd_lcm",
+    "slot": "fill",
+    "stem": "A = {p1} × {p2} × {qa}，B = {p1} × {p2} × {qb}，A 和 B 的最大公因数是（　　），最小公倍数是（　　）。",
+    "answer_expr": "{gcf}",
+    "answer_display": "{ans}；{lcm}",
+    // 原本是写死的 "A = 2×3×7，B = 2×5×7"，没有 params —— 同一份卷里抽到就是原题照抄，
+    // 且 {lcm} 从未赋值。改为质因数参数化：既保证每次不同，又把答案交给代码算。
+    // constraints 保证四个质因数互不相同，否则最大公因数就不是 p1×p2 了。
+    "params": {
+      "p1": {"type": "choice", "from": [2, 3, 5, 7]},
+      "p2": {"type": "choice", "from": [2, 3, 5, 7, 11]},
+      "qa": {"type": "choice", "from": [3, 5, 7, 13]},
+      "qb": {"type": "choice", "from": [5, 7, 11, 13]},
+      "gcf": {"type": "expr", "expr": "{p1} * {p2}"},
+      "lcm": {"type": "expr", "expr": "{p1} * {p2} * {qa} * {qb}"}
+    },
+    "constraints": [
+      "{p1} != {p2}",
+      "{qa} != {p1} and {qa} != {p2}",
+      "{qb} != {p1} and {qb} != {p2}",
+      "{qa} != {qb}"
+    ],
+    "solution": "用分解质因数法。最大公因数取两个数公有的质因数各一次相乘，即 {p1} × {p2} = {gcf}；最小公倍数取公有质因数与各自独有的质因数相乘，即 {p1} × {p2} × {qa} × {qb} = {lcm}。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "na_simple_01",
+    "knowledge_id": "simple_calc",
+    "slot": "calc",
+    "stem": "简算：999 × {a} + {b} × {c}",
+    "answer_expr": "999 * {a} + {b} * {c}",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "choice", "from": [222, 223, 224, 225]},
+      "b": {"type": "choice", "from": [333, 334, 335, 336]},
+      "c": {"type": "choice", "from": [333, 334, 335, 666]}
+    },
+    "solution": "观察数的特点：999 = 3 × 333，因此 999 与 333 之间存在倍数关系，可把第一项改写成含 333 的形式，再提取公因数 333，最后计算括号内的和。这是乘法分配律的逆用，也是广州密考简算题最常见的考法。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "na_mixed_01",
+    "knowledge_id": "four_mixed_ops",
+    "slot": "calc",
+    "stem": "计算：{a} ÷ [[1/{b}]] × [[{c}/{d}]]",
+    "answer_expr": "{a} * {b} * Fraction({c}, {d})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "int", "min": 2, "max": 12},
+      "b": {"type": "int", "min": 2, "max": 9},
+      "c": {"type": "int", "min": 1, "max": 8},
+      "d": {"type": "int", "min": 2, "max": 9}
+    },
+    "constraints": ["math.gcd({c}, {d}) == 1"],
+    "solution": "除以一个数（0 除外）等于乘这个数的倒数，所以 {a} ÷ 1/{b} = {a} × {b}，再乘 {c}/{d}，能约分的先约分，最后得出结果。分数除法转乘法是必考技能。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "na_equation_01",
+    "knowledge_id": "equation_solve",
+    "slot": "calc",
+    "stem": "解方程：{a}x : {b} = {c} : {d}",
+    "answer_expr": "Fraction({b} * {c}, {a} * {d})",
+    "answer_display": "x = {ans}",
+    "params": {
+      "a": {"type": "int", "min": 2, "max": 9},
+      "b": {"type": "int", "min": 2, "max": 12},
+      "c": {"type": "int", "min": 2, "max": 12},
+      "d": {"type": "int", "min": 1, "max": 9}
+    },
+    "solution": "根据比例的基本性质，内项之积等于外项之积，即 {d} × {a}x = {b} × {c}。算出两边后是一元一次方程，两边同除以未知数的系数即可。解比例的题最后要把结果代回原式检验。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "na_pattern_01",
+    "knowledge_id": "number_pattern",
+    "slot": "fill",
+    "stem": "观察下面的数列：{n1}，{n1d}，{n12d}，{n13d}，…… 第 {k} 个数是（　　）。",
+    "answer_expr": "{n1} + ({k} - 1) * {d}",
+    "answer_display": "{ans}",
+    "params": {
+      "n1": {"type": "int", "min": 2, "max": 12},
+      "d": {"type": "int", "min": 3, "max": 9},
+      "k": {"type": "int", "min": 8, "max": 20}
+    },
+    "solution": "这是等差数列，首项是 {n1}，公差是 {d}。第 k 项 = 首项 + （k − 1）× 公差，所以第 {k} 项 = {n1} + （{k} − 1）× {d} = {ans}。找规律题的关键是先确定公差，再套用通项公式。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "na_estimation_01",
+    "knowledge_id": "estimation",
+    "slot": "choice",
+    "stem": "估算 {m} × {n} 的结果，最接近的是（　　）。",
+    // 旧写法 answer_expr=1、answer_display={correct}，靠人肉排第一项当答案，
+    // 既算不出估算值，也让 ma/na/est 三个占位符全部悬空。改为用 ma×na 真算。
+    "answer_expr": "{ma} * {na}",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "m": {"type": "choice", "from": [198, 201, 299, 402]},
+      "n": {"type": "choice", "from": [21, 31, 41, 51]}
+    },
+    "solution": "估算时先把接近整十整百的数近似处理，{m} 看作 {ma}，{n} 看作 {na}，{ma} × {na} = {est}。估算的关键是判断结果的数量级，而不必精确计算。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "na_unit_conv_01",
+    "knowledge_id": "unit_conversion",
+    "slot": "fill",
+    "stem": "{v1} 立方米 = （　　）立方分米 = （　　）升；{t1} 小时 = （　　）分。",
+    "answer_expr": "{v1} * 1000",
+    "answer_display": "{ans}；{ans}；{mins}",
+    "params": {
+      "v1": {"type": "choice", "from": [1.5, 2.4, 3.6, 0.75, 1.25]},
+      "t1": {"type": "choice", "from": [1.5, 2.25, 0.75, 2.5, 1.2]},
+      "mins": {"type": "expr", "expr": "int(round({t1} * 60))"}
+    },
+    "solution": "体积单位进率：1 立方米 = 1000 立方分米，且 1 立方分米 = 1 升，这两个进率要连起来用；时间单位进率：1 小时 = 60 分。分别相乘即可，注意小数乘法的位值。",
+    "difficulty": 1,
+    "unit": null
+  },
+  {
+    "id": "na_convert_02",
+    "knowledge_id": "decimal_fraction_pct_convert",
+    "slot": "judge",
+    "stem": "因为 [[1/2]] = 50%，所以 [[1/2]] 米 = 50% 米。（　　）",
+    "answer_expr": "0",
+    "answer_display": "×",
+    "params": null,
+    "solution": "百分数只表示两个数的倍比关系，不能带单位名称。1/2 米是一个具体的长度，而「50% 米」这种写法本身就是错的。这考查的是「率」与「量」的区别，是广州密考的高频陷阱。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "na_column_01",
+    "knowledge_id": "column_calc",
+    "slot": "calc",
+    "stem": "列方程计算：一个数的 {a} 倍比它的 {b} 倍多 {c}，求这个数。",
+    "answer_expr": "Fraction({c}, {a} - {b})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "int", "min": 5, "max": 9},
+      "b": {"type": "int", "min": 2, "max": 4},
+      "c": {"type": "int", "min": 6, "max": 30}
+    },
+    "solution": "设这个数为 x。根据题意列方程：{a}x − {b}x = {c}，合并同类项得未知数项，两边同除以系数即得 x。列方程解应用题的第一步永远是「设未知数 + 找等量关系」。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "na_simple_02",
+    "knowledge_id": "simple_calc",
+    "slot": "choice",
+    "stem": "计算 [[{n}/{d}]] × {k} + [[{n}/{d}]] × {m}，简便算法是运用（　　）。",
+    "answer_expr": "Fraction({n}, {d}) * ({k} + {m})",
+    // 问的是"运用了什么运算律"，答案是文字概念而非数值；
+    // 这类题统一用 {correct} 写法，约定 choices_expr 第一项为正确答案。
+    "answer_display": "{correct}",
+    "choices_expr": ["乘法分配律", "乘法交换律", "乘法结合律", "加法结合律"],
+    "params": {
+      "n": {"type": "int", "min": 1, "max": 8},
+      "d": {"type": "int", "min": 3, "max": 9},
+      "k": {"type": "int", "min": 3, "max": 9},
+      "m": {"type": "int", "min": 3, "max": 9}
+    },
+    "constraints": ["math.gcd({n}, {d}) == 1"],
+    "solution": "两项都含有相同因数 {n}/{d}，把它提取出来，剩下的 {k} 与 {m} 相加，这就是乘法分配律的逆用。这也是密考简算题的标准解法。",
+    "difficulty": 2,
+    "unit": null
+  }
+]

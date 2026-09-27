@@ -1,0 +1,243 @@
+// 广州小升初密考题库 · 行程问题（目标 12 分）+ 空间与图形（目标 10 分）
+//
+// 【图形约定 · 由首次验证踩坑得来】
+//   SVG 的 viewBox 必须比图形实际占用范围多留出右 40 单位、下 30 单位，
+//   否则 <text> 标签的文字会被裁切（实测：viewBox 宽 240 时 "10cm" 被裁成 "10c"）。
+//   该约束由 app/services/qa_checker.py 的 check_figure_bounds() 强制检查。
+[
+  {
+    "id": "tv_basic_01",
+    "knowledge_id": "travel_basic",
+    "slot": "fill",
+    "stem": "一辆汽车从甲地开往乙地，每小时行驶 {v} 千米，{h} 小时到达。甲、乙两地相距（　　）千米；返回时每小时多行驶 {dv} 千米，返回需要（　　）小时。",
+    "answer_expr": "{v} * {h}",
+    "answer_display": "{dist} 千米；{back} 小时",
+    "params": {
+      "v": {"type": "choice", "from": [40, 45, 50, 60, 75, 80]},
+      "h": {"type": "choice", "from": [2, 3, 4, 5]},
+      "dv": {"type": "choice", "from": [10, 15, 20, 25]},
+      "dist": {"type": "expr", "expr": "{v} * {h}"},
+      "back": {"type": "expr", "expr": "{v} * {h} // ({v} + {dv})"}
+    },
+    // 返程时间要整除，否则出现 3.42857 小时这种不像小学题的答案
+    "constraints": ["({v} * {h}) % ({v} + {dv}) == 0"],
+    "solution": "先用速度乘时间求全程。返回时速度变成原来的速度加上 {dv}，路程不变，所以返回时间 = 路程 ÷ 新速度。往返路程相同是连接两个问题的关键，很多行程题都靠这个不变量打通。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "tv_meet_01",
+    "knowledge_id": "travel_meet_chase",
+    "slot": "solve",
+    "stem": "甲、乙两地相距 {dist} 千米。客车和货车同时从两地相向开出，客车每小时行 {v1} 千米，货车每小时行 {v2} 千米。经过几小时两车相遇？",
+    "answer_expr": "round({dist} / ({v1} + {v2}), 2)",
+    "answer_display": "{ans} 小时",
+    "params": {
+      "dist": {"type": "choice", "from": [270, 315, 360, 420, 450, 540, 630]},
+      "v1": {"type": "choice", "from": [60, 65, 70, 75, 80, 90]},
+      "v2": {"type": "choice", "from": [45, 50, 55, 60, 70]}
+    },
+    "solution": "相遇问题的核心是速度和。两车同时相向而行，每小时一共前进 {v1} 加 {v2} 千米。相遇时间 = 总路程 ÷ 速度和。注意与追及问题形成对照：相遇用速度和，追及用速度差，两者不可混用。",
+    "difficulty": 4,
+    "unit": "小时"
+  },
+  {
+    "id": "tv_water_01",
+    "knowledge_id": "travel_water_air",
+    "slot": "choice",
+    "stem": "一艘轮船在静水中的速度是每小时 {s} 千米，水流速度是每小时 {w} 千米。这艘轮船顺水航行 {h} 小时，可以航行（　　）千米。",
+    "answer_expr": "({s} + {w}) * {h}",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{wrong1}", "{wrong2}", "{wrong3}"],
+    "params": {
+      "s": {"type": "choice", "from": [18, 20, 24, 25, 30]},
+      "w": {"type": "choice", "from": [2, 3, 4, 5]},
+      "h": {"type": "choice", "from": [3, 4, 5, 6]}
+    },
+    "solution": "顺水航行时水流对船有帮助，顺水速度 = 静水速度 + 水流速度，再用这个速度乘时间得到路程。对照记忆：逆水速度 = 静水速度 − 水流速度。这两个公式很容易记反，做题时先想清楚水流是帮忙还是阻碍。",
+    "difficulty": 3,
+    "unit": "千米"
+  },
+  {
+    "id": "tv_circular_01",
+    "knowledge_id": "travel_circular",
+    "slot": "extra",
+    "stem": "一个环形跑道一周长 {lap} 米。甲、乙两人同时同地出发同向跑步，甲每秒跑 {v1} 米，乙每秒跑 {v2} 米。经过多少秒甲第一次追上乙？此时甲一共跑了多少米？",
+    "answer_expr": "round({lap} / ({v1} - {v2}), 2)",
+    "answer_display": "{ans} 秒；{dist} 米",
+    // 事故复盘：v1 与 v2 可能取到相同值（如同为 6），速度差为 0 直接 ZeroDivisionError 崩溃，
+    // 是全题库唯一会让出卷整体失败的缺陷。现用 constraints 从源头排除。
+    "params": {
+      "lap": {"type": "choice", "from": [400, 300, 600, 500]},
+      "v1": {"type": "choice", "from": [6, 7, 8, 9]},
+      "v2": {"type": "choice", "from": [4, 5, 6]},
+      "dist": {"type": "expr", "expr": "{v1} * {lap} // ({v1} - {v2})"}
+    },
+    "constraints": [
+      "{v1} > {v2}",
+      "{lap} % ({v1} - {v2}) == 0"
+    ],
+    "solution": "环形跑道上同向而行，甲要追上乙必须比乙多跑整整一圈。两人的速度差是 {v1} 减 {v2}，追上所用的时间 = 一圈的长度 ÷ 速度差。这段时间里甲跑的路程用甲的速度乘时间求得。易错点：环形追及要用周长而不是直线距离，且追上一圈的时间正是第一次追上。",
+    "difficulty": 5,
+    "unit": null
+  },
+  {
+    "id": "tv_ratio_01",
+    "knowledge_id": "travel_with_ratio",
+    "slot": "choice",
+    "stem": "甲、乙两车行驶同样的路程，甲车用的时间是乙车的 [[{a}/{b}]]。甲、乙两车的速度比是（　　）。",
+    "answer_expr": "1",
+    "answer_display": "{correct}",
+    "choices_expr": ["{b} : {a}", "{a} : {b}", "{b2} : {a}", "{a2} : {b}"],
+    "params": {
+      "a": {"type": "int", "min": 2, "max": 5},
+      "b": {"type": "int", "min": 6, "max": 9}
+    },
+    // 时间比必须是互质的，否则速度比 {b}:{a} 不是最简整数比（如 2:6 应为 1:3）
+    "constraints": ["math.gcd({a}, {b}) == 1"],
+    "solution": "路程一定时，速度与时间成反比。甲、乙的时间比是 {a} 比 {b}，那么速度比就是它的反比，即 {b} 比 {a}。记住这条反比关系，很多行程题可以一步到位，不必设未知数列方程。",
+    "difficulty": 4,
+    "unit": null
+  },
+  {
+    "id": "tv_meet_02",
+    "knowledge_id": "travel_meet_chase",
+    "slot": "extra",
+    "stem": "甲、乙两人分别从 A、B 两地同时出发相向而行，第一次相遇时距 A 地 {x} 千米。相遇后两人继续前进，到达对方出发点后立即返回，第二次相遇时距 B 地 {y} 千米。A、B 两地相距多少千米？",
+    "answer_expr": "3 * {x} - {y}",
+    "answer_display": "{ans} 千米",
+    "params": {
+      "x": {"type": "choice", "from": [40, 45, 50, 60, 70]},
+      "y": {"type": "choice", "from": [20, 25, 30, 35, 40]}
+    },
+    "solution": "这是经典的两次相遇问题，关键结论是从出发到第二次相遇，两人合起来走的路程是全程的 3 倍。因此甲走的总路程也是第一次相遇时所走路程的 3 倍，即 {x} 乘 3。而甲到达 B 地后又返回走了 {y} 千米，所以全程 = 3 × {x} − {y}。这条 3 倍关系是密考附加题的高频结论。",
+    "difficulty": 5,
+    "unit": "千米"
+  },
+  {
+    "id": "gm_circle_01",
+    "knowledge_id": "cylinder_cone",
+    "slot": "geometry",
+    "stem": "一个圆柱形水桶，从里面量得底面半径是 {r} 厘米，高是 {h} 厘米。（π 取 3.14）这个水桶最多能装水多少毫升？",
+    "answer_expr": "round(3.14 * {r} * {r} * {h}, 2)",
+    "answer_display": "{ans} 立方厘米",
+    "params": {
+      "r": {"type": "choice", "from": [3, 4, 5, 6, 8, 10]},
+      "h": {"type": "choice", "from": [10, 12, 15, 20, 25]}
+    },
+    "solution": "求能装多少水就是求水桶的容积，要从里面量数据。圆柱体积 = 底面积 × 高，底面积 = π 乘半径的平方。算出体积后注意单位换算：1 立方厘米 = 1 毫升，所以体积的数值就是毫升数。",
+    "difficulty": 3,
+    "unit": "毫升"
+  },
+  {
+    "id": "gm_cone_01",
+    "knowledge_id": "cylinder_cone",
+    "slot": "geometry",
+    "stem": "一个圆锥形沙堆，底面积是 {s} 平方米，高是 {h} 米。把这个沙堆铺在一条宽 {w} 米的路面上，能铺多少米长？（得数保留整数）",
+    "answer_expr": "round({s} * {h} / 3 / {w}, 0)",
+    "answer_display": "{ans} 米",
+    "params": {
+      "s": {"type": "choice", "from": [12, 15, 18, 24, 30, 36]},
+      "h": {"type": "choice", "from": [1.5, 2, 2.4, 3]},
+      "w": {"type": "choice", "from": [2, 3, 4, 5]}
+    },
+    "solution": "思路是体积不变，沙堆铺到路面上形状变了但体积相等。先求圆锥体积，用底面积乘高再乘三分之一；铺成的部分可以看成长方体，用体积除以宽度就得到长度。易错点：圆锥体积千万别忘了乘三分之一。",
+    "difficulty": 4,
+    "unit": "米"
+  },
+  {
+    "id": "gm_scale_01",
+    "knowledge_id": "scale_map",
+    "slot": "fill",
+    "stem": "在比例尺是 1 : {den} 的地图上，量得 A、B 两地的距离是 {d} 厘米。A、B 两地的实际距离是（　　）千米。",
+    "answer_expr": "round({d} * {den} / 100000, 2)",
+    "answer_display": "{ans} 千米",
+    "params": {
+      "den": {"type": "choice", "from": [500000, 1000000, 2000000, 4000000]},
+      "d": {"type": "choice", "from": [3, 4, 5, 6, 7.5]}
+    },
+    "solution": "比例尺 1 比 {den} 表示图上 1 厘米相当于实际 {den} 厘米。实际距离 = 图上距离 × 比例尺的后项。算出厘米数后必须换算成千米，1 千米 = 100000 厘米。两个易错点：一是漏了单位换算，二是把比例尺用反变成除法。",
+    "difficulty": 2,
+    "unit": "千米"
+  },
+  {
+    "id": "gm_solid_01",
+    "knowledge_id": "solid_volume",
+    "slot": "fill",
+    "stem": "一个正方体的棱长总和是 {sumlen} 厘米，它的表面积是（　　）平方厘米，体积是（　　）立方厘米。",
+    "answer_expr": "({sumlen} // 12) ** 3",
+    "answer_display": "{area}；{ans}",
+    "params": {
+      "sumlen": {"type": "choice", "from": [36, 48, 60, 72, 84, 96]},
+      "edge": {"type": "expr", "expr": "{sumlen} // 12"},
+      "area": {"type": "expr", "expr": "6 * ({sumlen} // 12) ** 2"}
+    },
+    // 正方体有 12 条等长棱，棱长总和必须能被 12 整除才是个合法题干
+    "constraints": ["{sumlen} % 12 == 0"],
+    "solution": "正方体有 12 条棱且长度都相等，所以棱长 = 棱长总和 ÷ 12。接着表面积 = 棱长 × 棱长 × 6，体积 = 棱长的三次方。三步依次推进，每一步都要用到上一步的结果。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "gm_composite_01",
+    "knowledge_id": "composite_area",
+    "slot": "geometry",
+    "stem": "如下图，一个长方形（长 {l} 厘米，宽 {w} 厘米）内画了一个最大的圆。求圆外、长方形内阴影部分的面积。（π 取 3.14）",
+    "figure_svg": "<svg viewBox=\"0 0 300 190\" width=\"300\"><rect x=\"30\" y=\"25\" width=\"200\" height=\"100\" fill=\"#f0f0f0\" stroke=\"#000\" stroke-width=\"1\"/><circle cx=\"130\" cy=\"75\" r=\"50\" fill=\"#ffffff\" stroke=\"#c0392b\" stroke-width=\"1.2\"/><text x=\"118\" y=\"146\" font-size=\"11\" fill=\"#000\">30cm</text><text x=\"240\" y=\"80\" font-size=\"11\" fill=\"#000\">20cm</text></svg>",
+    "answer_expr": "round({l} * {w} - 3.14 * ({w} / 2) ** 2, 2)",
+    "answer_display": "{ans} 平方厘米",
+    "params": {
+      "l": {"type": "choice", "from": [30, 40, 50, 60]},
+      "w": {"type": "choice", "from": [20, 24, 30, 40]}
+    },
+    "solution": "长方形内画最大的圆，圆的直径等于长方形的宽，所以半径是宽的一半。阴影面积用整体减部分：先用长乘宽求长方形面积，再用 π 乘半径的平方求圆面积，两者相减。这是组合图形最常用的割补思路。",
+    "difficulty": 4,
+    "unit": "平方厘米"
+  },
+  {
+    "id": "gm_transform_01",
+    "knowledge_id": "geometry_transform",
+    "slot": "choice",
+    "stem": "把一个图形先向右平移 {n} 格，再绕某点顺时针旋转 {deg} 度，得到的图形与原图形相比（　　）。",
+    "answer_expr": "1",
+    "answer_display": "{correct}",
+    "choices_expr": ["形状和大小都不变，位置改变", "形状不变但大小改变", "形状改变但大小不变", "形状和大小都改变"],
+    "params": {
+      "n": {"type": "int", "min": 2, "max": 6},
+      "deg": {"type": "choice", "from": [90, 180, 270]}
+    },
+    "solution": "平移和旋转都属于图形的运动，它们只改变图形的位置和方向，不改变图形的形状，也不改变大小。所以变换后的图形与原图形全等，选形状和大小都不变、只是位置改变。这条性质是判断各类图形变换题的基础。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "gm_plane_01",
+    "knowledge_id": "plane_area",
+    "slot": "solve",
+    "stem": "一个梯形的面积是 {area} 平方厘米，上底是 {a} 厘米，下底是 {b} 厘米。这个梯形的高是多少厘米？",
+    "answer_expr": "round(2 * {area} / ({a} + {b}), 2)",
+    "answer_display": "{ans} 厘米",
+    "params": {
+      "a": {"type": "choice", "from": [4, 6, 8, 10]},
+      "b": {"type": "choice", "from": [12, 14, 16, 18, 20]},
+      "area": {"type": "choice", "from": [60, 80, 96, 120, 150, 180]}
+    },
+    "solution": "梯形面积 = （上底 + 下底） × 高 ÷ 2，反过来求高就要逆向运算：高 = 面积 × 2 ÷ （上底 + 下底）。易错点是在反求高时忘记先乘 2，导致结果只有正确答案的一半。",
+    "difficulty": 3,
+    "unit": "厘米"
+  },
+  {
+    "id": "gm_count_01",
+    "knowledge_id": "geometry_count",
+    "slot": "extra",
+    "stem": "在一个底边被平均分成 {n} 份的三角形中，连接顶点与底边上的所有分点，一共可以得到多少个三角形？",
+    "answer_expr": "{n} * ({n} + 1) // 2",
+    "answer_display": "{ans} 个",
+    "params": {
+      "n": {"type": "int", "min": 3, "max": 8}
+    },
+    "solution": "按底边占几份分类计数：占 1 份的三角形有 {n} 个，占 2 份的有 {n} 减 1 个，依次递减，占 {n} 份的有 1 个。总数就是从 1 加到 {n}，用等差数列求和公式算出。几何计数要有序分类，才能避免重复或遗漏。",
+    "difficulty": 4,
+    "unit": "个"
+  }
+]

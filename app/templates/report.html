@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}答题报告 · {{ got }} 分{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/paper.css">{% endblock %}
+{% block body %}
+
+<section class="rep-hero">
+  <div class="score-ring">
+    <div class="score-big">{{ got }}<small>/{{ total }}</small></div>
+    <div class="score-rate">得分率 {{ rate }}%</div>
+  </div>
+  <div class="rep-sum">
+    <h1>{{ attempt.student_name }} 的答题报告</h1>
+    <p class="lead">
+      用时 {{ used_min }} 分钟{% if report.unanswered %} · <b class="warn">漏答 {{ report.unanswered }} 题</b>{% endif %}
+      · 提交于 {{ report.submitted_at }}
+    </p>
+    <div class="rep-actions">
+      <a class="btn" href="/answers/{{ paper.id }}">查看答案与思路</a>
+      <a class="btn" href="/paper/{{ attempt_id }}">回到这份卷</a>
+      <a class="btn primary" href="/">再练一份</a>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>分题型得分</h2>
+  <table class="tbl">
+    <thead><tr><th>题型</th><th>题量</th><th>满分</th><th>实得</th><th>得分率</th></tr></thead>
+    <tbody>
+      {% for s in report.slot_stat %}
+      <tr>
+        <td>{{ s.label }}</td>
+        <td>{{ s.count }}</td>
+        <td>{{ s.total }}</td>
+        <td><b class="score">{{ s.got }}</b></td>
+        <td class="rate-cell"><span class="rate-bar" style="width: {{ s.rate }}%"></span>{{ s.rate }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section class="panel">
+  <h2>分模块得分</h2>
+  <div class="mod-grid">
+    {% for m in report.module_stat %}
+    <div class="mod-card">
+      <div class="mod-name">{{ m.label }}</div>
+      <div class="mod-num">{{ m.got }}<small>/{{ m.total }}</small></div>
+      <div class="mod-bar"><span style="width: {{ m.rate }}%"></span></div>
+      <div class="mod-foot">错 {{ m.wrong }} 题 · {{ m.rate }}%</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
+  <h2>薄弱知识点回溯</h2>
+  {% if report.weak_points %}
+  <p class="hint">沿着前置依赖往上找：标签里「牵连」的一栏，说明这个点一错会连带哪些题也错。</p>
+  <table class="tbl">
+    <thead><tr><th>知识点</th><th>所属模块</th><th>所在知识链</th><th>本次牵连错题</th></tr></thead>
+    <tbody>
+      {% for w in report.weak_points %}
+      <tr>
+        <td><b>{{ w.name }}</b></td>
+        <td class="dim">{{ w.module_label }}</td>
+        <td>{% if w.chain %}<span class="chip">{{ w.chain }}</span>{% else %}<span class="dim">—</span>{% endif %}</td>
+        <td class="dim">{{ w.caused_by | join('、') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">全卷无错题，非常棒。</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>错题明细（{{ report.wrong_details | length }} 题）</h2>
+  {% for d in report.wrong_details %}
+  <div class="wrong-item">
+    <div class="wi-head">
+      <span class="q-seq">{{ d.seq }}.</span>
+      <span class="chip">{{ d.knowledge_name }}</span>
+      <span class="chip warn">{{ d.score }} 分</span>
+      <span class="wi-flag">{% if not d.answered %}漏答{% else %}答错{% endif %}</span>
+    </div>
+    <div class="wi-stem">{{ (d.stem | math) | safe }}</div>
+    <div class="wi-grid">
+      <div><label>你的答案</label><div class="wi-wrong">{{ d.student_answer if d.student_answer else '（空）' }}</div></div>
+      <div><label>正确答案</label><div class="wi-right">{{ (d.correct | math) | safe }}</div></div>
+    </div>
+    <div class="wi-sol"><label>解题思路</label><p>{{ (d.solution | math) | safe }}</p></div>
+  </div>
+  {% else %}
+  <p class="empty">没有错题。</p>
+  {% endfor %}
+</section>
+
+{% endblock %}

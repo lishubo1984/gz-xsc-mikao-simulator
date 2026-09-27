@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ paper.title if paper else '答题' }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/paper.css">{% endblock %}
+{% block body %}
+
+<div class="exam-bar">
+  <div class="eb-left">
+    <div class="eb-title">{{ paper.title }}</div>
+    <div class="eb-sub">满分 {{ total_score }} 分 · 时间 {{ duration_min }} 分钟</div>
+  </div>
+  <div class="eb-mid">
+    <div class="clock" id="clock">--:--</div>
+    <div class="clock-lab">剩余时间</div>
+  </div>
+  <div class="eb-right">
+    <div class="prog-wrap">
+      <div class="prog"><div class="prog-bar" id="progBar"></div></div>
+      <div class="prog-lab"><span id="doneCnt">0</span> / <span id="totalCnt">0</span> 已作答</div>
+    </div>
+    <button class="btn primary" id="submitBtn">交卷</button>
+  </div>
+</div>
+
+{% if not submitted %}
+<form id="examForm" autocomplete="off">
+{% for sec in sections %}
+<section class="sec">
+  <h2 class="sec-title">{{ sec.title }}<span class="sec-score">共 {{ sec.score }} 分</span></h2>
+  {% if sec.instruction %}<p class="sec-inst">{{ sec.instruction }}</p>{% endif %}
+
+  {% for it in sec.qitems %}
+  <div class="q" data-item="{{ it.id }}" data-slot="{{ it.slot }}" id="q{{ it.id }}">
+    <div class="q-head">
+      <span class="q-seq">{{ it.seq }}.</span>
+      <span class="q-score">{{ it.score }} 分</span>
+      <span class="q-tip">{{ it.knowledge_name }}</span>
+    </div>
+    <div class="q-stem">
+      {% if it.slot == 'choice' or it.slot == 'judge' %}
+        {# 选择/判断题的答案通过选项或 √× 按钮给出，题干里的空括号必须去掉，
+           否则会出现"既能填又能选"的两个控件，孩子填了却不算分 #}
+        {{ (it.rendered_stem.replace('（　　）', '　') | math) | safe }}
+      {% elif it.slot in ['calc', 'solve', 'geometry', 'extra'] %}
+        {# 主观题与计算题：不在题干里挖空，答案框放在下方，另留解题过程区 #}
+        {{ (it.rendered_stem | math) | safe }}
+      {% else %}
+        {% set parts = it.rendered_stem.split('（　　）') %}
+        {% for p in parts %}
+          {{ (p | math) | safe }}
+          {% if not loop.last %}
+            <input class="blank" type="text" data-blank="{{ it.id }}" data-blank-idx="{{ loop.index0 }}">
+          {% endif %}
+        {% endfor %}
+        {% if parts|length == 1 %}<input class="blank wide" type="text" data-blank="{{ it.id }}" data-blank-idx="0">{% endif %}
+      {% endif %}
+    </div>
+
+    {% if it.figure_svg %}
+    <div class="q-fig">{{ it.figure_svg | safe }}</div>
+    {% endif %}
+
+    {% if it.slot == 'choice' %}
+      <div class="q-choices">
+        {% for c in it.choices %}
+          <label class="choice">
+            <input type="radio" name="choice{{ it.id }}" value="{{ c }}" data-choice="{{ it.id }}">
+            <span class="letter">{{ 'ABCD'[loop.index0] }}</span>
+            <span class="ctext">{{ (c | math) | safe }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+    {% elif it.slot == 'judge' %}
+      <div class="q-judge">
+        <button type="button" class="judge-btn" data-judge="{{ it.id }}" data-val="√">√ 正确</button>
+        <button type="button" class="judge-btn" data-judge="{{ it.id }}" data-val="×">× 错误</button>
+      </div>
+
+    {% elif it.slot in ['calc', 'solve', 'geometry', 'extra'] %}
+      <div class="q-work">
+        <textarea class="scratch" data-scratch="{{ it.id }}" rows="3"
+                  placeholder="解题过程（不计分，给自己看的思路）"></textarea>
+        <div class="ans-row">
+          <label>答案：</label>
+          <input class="ans-input" type="text" data-blank="{{ it.id }}" data-blank-idx="0"
+          placeholder="{% if it.multiblank %}多个空请用中文分号「；」隔开{% endif %}">
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</section>
+{% endfor %}
+</form>
+
+<div class="save-tip" id="saveTip"></div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/paper.js"></script>
+<script>
+window.EXAM = {
+  attemptId: "{{ attempt_id }}",
+  totalSec: {{ duration_min * 60 }},
+  remainingSec: {{ remaining_sec }},
+  totalQuestions: {{ total_questions }},
+  answers: {{ answers_json | safe }},
+  scratch: {{ scratch_json | safe }}
+};
+bootExam();
+</script>
+{% endblock %}

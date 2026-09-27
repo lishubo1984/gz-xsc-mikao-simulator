@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}尚未交卷{% endblock %}
+{% block body %}
+<section class="panel">
+  <h2>这份卷还没交</h2>
+  <p class="lead">答题完成后点「交卷」才会判分并生成报告。</p>
+  <a class="btn primary" href="/paper/{{ attempt_id }}">回去继续作答</a>
+</section>
+{% endblock %}
