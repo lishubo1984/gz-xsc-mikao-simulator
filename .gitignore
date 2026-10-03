@@ -250,7 +250,6 @@ scripts/fix_choices.py
 scripts/smoke_out.txt
 scripts/probe_result.txt
 
-# 运行产物（PDF / 图片 / 日志）
-exports/*.pdf
-exports/*.png
-exports/*.log
+# 运行产物（PDF / 图片 / 日志 / 样本 / 临时文件）—— 不入库，仅保留目录结构
+exports/*
+!exports/.gitkeep
