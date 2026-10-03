@@ -229,3 +229,28 @@ secrets.yaml
 secrets.json
 credentials.json
 service-account.json
+
+# ============================================================
+# 本项目运行 / 开发残留（不入库）
+# ============================================================
+# SQLite 运行时临时文件
+*.db-shm
+*.db-wal
+
+# 题库备份与失败产物
+*.bak
+data/bank/_failed_py_bank/
+
+# 开发探针 / 临时日志（开发残留，不入库）
+scripts/probe_*.py
+scripts/probe_*.txt
+scripts/*_out.txt
+scripts/logerr.py
+scripts/fix_choices.py
+scripts/smoke_out.txt
+scripts/probe_result.txt
+
+# 运行产物（PDF / 图片 / 日志）
+exports/*.pdf
+exports/*.png
+exports/*.log

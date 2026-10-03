@@ -1,0 +1,210 @@
+// 广州小升初密考题库 · 第二轮扩充（W5）
+// 目标：① 难度梯度——在已覆盖组合里补 difficulty 4 的压轴/灵活题（分数裂项、加盐增浓、追及、抽屉原理、圆柱圆锥）
+//       ② 单模板薄弱点补充——travel 求解、解比例、三角形数规律、逆水行船、利润率概念
+// 全部落在 knowledge_graph.yaml 的 paper_layout 已声明抽取的 (module,slot) 组合内。
+[
+  // ---------- 行程 · 求解（原 travel 求解仅 tv_meet_01 一道，零余量） ----------
+  {
+    "id": "exp_tv_solve_02",
+    "knowledge_id": "travel_meet_chase",
+    "slot": "solve",
+    "stem": "甲、乙两人同向而行，甲每小时行 {v1} 千米，乙每小时行 {v2} 千米。乙先出发 {t0} 小时，甲经过几小时能追上乙？",
+    "answer_expr": "Fraction({v2} * {t0}, {v1} - {v2})",
+    "answer_display": "{ans} 小时",
+    "params": {
+      "v1": {"type": "choice", "from": [60, 70, 80, 90]},
+      "v2": {"type": "choice", "from": [40, 45, 50, 55]},
+      "t0": {"type": "choice", "from": [1, 2, 3]},
+      "lead": {"type": "expr", "expr": "{v2} * {t0}"},
+      "delta": {"type": "expr", "expr": "{v1} - {v2}"}
+    },
+    "constraints": ["{v1} > {v2}", "({v2} * {t0}) % ({v1} - {v2}) == 0"],
+    "solution": "追及问题用速度差。乙先走 {t0} 小时，已领先 {lead} 千米；甲每小时比乙多走 {delta} 千米，追上所需时间 = 领先距离 ÷ 速度差 = {lead} ÷ {delta} = {ans} 小时。牢记：追及用速度差，相遇用速度和。",
+    "difficulty": 4,
+    "unit": "小时"
+  },
+
+  // ---------- 数与代数 · 计算（难度梯度：分数裂项相消，压轴简算） ----------
+  {
+    "id": "exp_na_simple_03",
+    "knowledge_id": "simple_calc",
+    "slot": "calc",
+    "stem": "简算：1/(1×2) + 1/(2×3) + 1/(3×4) + … + 1/({n}×({n}+1))",
+    "answer_expr": "Fraction({n}, {n} + 1)",
+    "answer_display": "{ans}",
+    "params": {
+      "n": {"type": "choice", "from": [2, 3, 4, 5,6]}
+    },
+    "solution": "每一项都可以拆开：1/(k(k+1)) = 1/k − 1/(k+1)，相邻两项的正负部分相互抵消，最后只剩开头的 1 和结尾的 −1/({n}+1)，所以结果是 1 − [[1/({n}+1)]] = [[{n}/({n}+1)]]。这种“裂项相消”是密考简算里最巧妙的一类，关键是把一项拆成两项之差。",
+    "difficulty": 4,
+    "unit": null
+  },
+
+  // ---------- 分数与百分数 · 求解（难度梯度：加盐增浓，浓度问题压轴） ----------
+  {
+    "id": "exp_fp_concentration_02",
+    "knowledge_id": "concentration",
+    "slot": "solve",
+    "stem": "有浓度为 {p}% 的盐水 {m} 克，加入 {salt} 克盐（全部溶解）后，盐水的浓度变为百分之几？（结果保留一位小数）",
+    "answer_expr": "round(({m} * {p} / 100 + {salt}) / ({m} + {salt}) * 100, 1)",
+    "answer_display": "{ans}%",
+    "params": {
+      "p": {"type": "choice", "from": [10, 12, 15, 20]},
+      "m": {"type": "choice", "from": [100, 200, 400, 500]},
+      "salt": {"type": "choice", "from": [10, 20, 30, 40]},
+      "salt0": {"type": "expr", "expr": "{m} * {p} // 100"},
+      "saltnew": {"type": "expr", "expr": "{m} * {p} // 100 + {salt}"},
+      "newm": {"type": "expr", "expr": "{m} + {salt}"}
+    },
+    "constraints": ["{salt} < {m}"],
+    "solution": "加盐前盐的质量 = {m} × {p}% = {salt0} 克；加盐后盐一共 {saltnew} 克，盐水总重变成 {newm} 克。新浓度 = {saltnew} ÷ {newm} × 100% = {ans}%。注意：“加水变稀、加盐变浓”，加盐时盐变重、总重也变重，两个变化都要算进去。",
+    "difficulty": 4,
+    "unit": "%"
+  },
+
+  // ---------- 空间与图形 · 选择（难度梯度：圆柱圆锥等底等高） ----------
+  {
+    "id": "exp_gm_choice_02",
+    "knowledge_id": "cylinder_cone",
+    "slot": "choice",
+    "stem": "一个圆柱和一个圆锥等底等高，已知圆柱体积是 {v} 立方厘米，圆锥的体积是（　　）立方厘米。",
+    "answer_expr": "{v} // 3",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "v": {"type": "choice", "from": [30, 60, 90, 120, 150, 180]}
+    },
+    "constraints": ["{v} % 3 == 0"],
+    "solution": "等底等高的圆锥体积是圆柱体积的三分之一，这是圆柱圆锥最重要的关系。记住“圆锥 = 圆柱 ÷ 3”，反过来圆柱 = 圆锥 × 3。",
+    "difficulty": 4,
+    "unit": "立方厘米"
+  },
+
+  // ---------- 空间与图形 · 选择（半径扩大，面积扩大 n² 倍，经典易错） ----------
+  {
+    "id": "exp_gm_circle_02",
+    "knowledge_id": "circle_sector",
+    "slot": "choice",
+    "stem": "一个圆的半径扩大到原来的 {n} 倍，它的面积扩大到原来的（　　）倍。",
+    "answer_expr": "{n} * {n}",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{two_n}", "{w1}", "{w2}"],
+    "distractor_expr": ["{n}", "{n} * {n} + 1", "{n} * {n} - 1"],
+    "params": {
+      "n": {"type": "choice", "from": [3, 4, 5]},
+      "two_n": {"type": "expr", "expr": "2 * {n}"}
+    },
+    "solution": "圆面积 = πr²，半径扩大 n 倍后面积 = π(nr)² = n²·πr²，所以面积扩大到原来的 n² 倍。注意：周长与半径成正比（扩大 n 倍），面积与半径的平方成正比（扩大 n² 倍），这是常考易错点——很多人会误答 2n 倍。",
+    "difficulty": 3,
+    "unit": null
+  },
+
+  // ---------- 分数与百分数 · 选择（百分率概念，正确说法判断，难度梯度） ----------
+  {
+    "id": "exp_fp_growth_01",
+    "knowledge_id": "percent_word_problem",
+    "slot": "choice",
+    "stem": "下面关于百分率的说法，正确的是（　　）。",
+    "answer_expr": "1",
+    "answer_display": "{correct}",
+    "choices_expr": ["出勤率最大是 100%", "合格率可能大于 100%", "增长率一定小于 100%", "发芽率越小越好"],
+    "params": null,
+    "solution": "出勤率 = 出勤人数 ÷ 总人数，最多 100%（全勤）；合格率同理最多 100%；增长率可以大于 100%（增长量超过原来的量）；发芽率是越高越好。所以只有“出勤率最大是 100%”正确。判断百分率题，先想清楚它表示的是哪两个数的比。",
+    "difficulty": 4,
+    "unit": null
+  },
+
+  // ---------- 比和比例 · 选择（解比例，补 proportion_property 的 choice 落地） ----------
+  {
+    "id": "exp_rp_prop_01",
+    "knowledge_id": "proportion_property",
+    "slot": "choice",
+    "stem": "解比例：x : {a} = {b} : {c}，x =（　　）。",
+    "answer_expr": "Fraction({a} * {b}, {c})",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "a": {"type": "choice", "from": [2, 3, 4, 5]},
+      "b": {"type": "choice", "from": [3, 4, 6, 8]},
+      "c": {"type": "choice", "from": [2, 3, 4, 6]}
+    },
+    "constraints": ["({a} * {b}) % {c} == 0", "{a} * {b} > {c}"],
+    "solution": "根据比例的基本性质，内项之积等于外项之积：c·x = a·b，所以 x = a·b ÷ c = {a} × {b} ÷ {c} = {ans}。解比例先交叉相乘化成方程，再求 x。",
+    "difficulty": 3,
+    "unit": null
+  },
+
+  // ---------- 数与代数 · 填空（规律：三角形数，补 number_pattern 的多样） ----------
+  {
+    "id": "exp_na_pattern_02",
+    "knowledge_id": "number_pattern",
+    "slot": "fill",
+    "stem": "根据规律填数：1，3，6，10，15，21，…… 这个数列第 {k} 个数是（　　）。",
+    "answer_expr": "Fraction({k} * ({k} + 1), 2)",
+    "answer_display": "{ans}",
+    "params": {
+      "k": {"type": "choice", "from": [8, 9, 10, 11, 12]}
+    },
+    "solution": "这是三角形数，相邻两项的差依次是 2、3、4、5…… 第 k 项 = 1 + 2 + … + k = k×(k+1)÷2 = {k}×{k+1}÷2 = {ans}。找规律题先算相邻项的差，发现是连续自然数就套等差数列求和公式。",
+    "difficulty": 3,
+    "unit": null
+  },
+
+  // ---------- 行程 · 选择（逆水行船，补 travel_water_air 的 variety） ----------
+  {
+    "id": "exp_tv_choice_01",
+    "knowledge_id": "travel_water_air",
+    "slot": "choice",
+    "stem": "一艘轮船在静水中的速度是每小时 {s} 千米，水流速度是每小时 {w} 千米。这艘轮船逆水航行 {h} 小时，行驶的路程是（　　）千米。",
+    "answer_expr": "({s} - {w}) * {h}",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "s": {"type": "choice", "from": [18, 20, 24, 25, 30]},
+      "w": {"type": "choice", "from": [2, 3, 4, 5]},
+      "h": {"type": "choice", "from": [3, 4, 5, 6]}
+    },
+    "constraints": ["{s} > {w}"],
+    "solution": "逆水航行时水流阻碍船前进，逆水速度 = 静水速度 − 水速 = ({s} − {w}) 千米/时，再用这个速度乘时间得到路程。对照记忆：顺水速度 = 静水速度 + 水速。",
+    "difficulty": 3,
+    "unit": "千米"
+  },
+
+  // ---------- 数与代数 · 计算（列方程计算，补 column_calc 的多样） ----------
+  {
+    "id": "exp_na_column_02",
+    "knowledge_id": "column_calc",
+    "slot": "calc",
+    "stem": "列式计算：一个数的 {a} 倍减去 {b}，差是 {c}，求这个数。",
+    "answer_expr": "Fraction({c} + {b}, {a})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "choice", "from": [3, 4, 5, 6]},
+      "b": {"type": "choice", "from": [5, 8, 10, 12]},
+      "c": {"type": "choice", "from": [10, 15, 20, 25]}
+    },
+    "constraints": ["({c} + {b}) % {a} == 0"],
+    "solution": "设这个数为 x。根据题意列方程：{a}·x − {b} = {c}，移项得 {a}·x = {c} + {b}，x = ({c} + {b}) ÷ {a} = {ans}。列方程解文字题的关键是“设未知数 + 找等量关系”。",
+    "difficulty": 3,
+    "unit": null
+  },
+
+  // ---------- 其他综合 · 填空（抽屉原理，补 pigeonhole 的 fill 落地，难度梯度） ----------
+  {
+    "id": "exp_ph_fill_01",
+    "knowledge_id": "pigeonhole",
+    "slot": "fill",
+    "stem": "把 {n} 本书放进 {k} 个抽屉里，根据抽屉原理，总有一个抽屉里至少放了（　　）本书。",
+    "answer_expr": "({n} + {k} - 1) // {k}",
+    "answer_display": "{ans}",
+    "params": {
+      "n": {"type": "choice", "from": [10, 13, 17, 21, 25]},
+      "k": {"type": "choice", "from": [3, 4, 5, 6]},
+      "q": {"type": "expr", "expr": "{n} // {k}"},
+      "r": {"type": "expr", "expr": "{n} % {k}"}
+    },
+    "solution": "抽屉原理（鸽巢原理）：把 n 个物体放进 k 个抽屉，至少有一个抽屉里的物体数不少于 ⌈n/k⌉。{n} 本书放进 {k} 个抽屉，{n} ÷ {k} = {q} 余 {r}；若整除则每抽屉 {q} 本，若有余则至少有一个抽屉多放 1 本，即 {ans} 本。",
+    "difficulty": 4,
+    "unit": "本"
+  }
+]

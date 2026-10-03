@@ -644,17 +644,29 @@ def _dedupe_choices(choices: list[str], correct: str,
 # --------------------------------------------------------------------------
 # 整卷生成
 # --------------------------------------------------------------------------
-# 优先知识点：把每格的名额优先给这些高频考点，避免随机到冷门知识点
+# 优先知识点：把每格的名额优先给这些高频考点，避免随机到冷门知识点。
+# 注意：同一优先层内用随机顺序平摊（见 _pick_templates 的 shuffle+稳定排序），
+# 因此把某知识点加进本表 = 让它"有资格参与竞争"，而不是"永远独占名额"。
+# W5 扩充题的 knowledge_id 已全部纳入对应题型优先层，确保它们是"活模板"而非被饿死的死模板。
 _SLOT_PRIORITY: dict[str, list[str]] = {
     "fill": ["num_notation", "decimal_fraction_pct_convert", "gcd_lcm",
              "unit_one", "percent_word_problem", "travel_basic",
-             "ratio_meaning", "proportion_property", "tree_planting",
-             "average_problem"],
+             "ratio_meaning", "proportion_property",
+             # W5 扩充：数与代数填空（质数合数/估算/规律）+ 比和比例（按比例分配）
+             "prime_composite", "estimation", "number_pattern", "ratio_distribution",
+             # W5 扩充：其他综合填空——补两个原零覆盖知识点（鸡兔同笼 / 容斥原理）+ 抽屉原理
+             "tree_planting", "average_problem",
+             "chicken_rabbit", "inclusion_exclusion", "pigeonhole"],
     "choice": ["percent_word_problem", "percent_change", "travel_basic",
                "scale_map", "ratio_meaning", "stats_probability",
-               "fraction_word_problem"],
+               "fraction_word_problem",
+               # W5 扩充：几何选择（圆/圆柱圆锥/立体体积）与行程（逆水行船）、比例（解比例）
+               "circle_sector", "solid_volume", "cylinder_cone",
+               "travel_water_air", "proportion_property"],
     "judge": ["percent_word_problem", "geometry_transform", "direct_inverse_proportion",
-              "pigeonhole", "stats_probability"],
+              "pigeonhole", "stats_probability",
+              # W5 扩充：比和比例判断（比的基本性质）
+              "ratio_meaning"],
     "calc": ["four_mixed_ops", "simple_calc", "equation_solve", "column_calc"],
     "geometry": ["circle_sector", "cylinder_cone", "composite_area", "plane_area"],
     "solve": ["fraction_word_problem", "percent_word_problem", "percent_change",
@@ -764,10 +776,14 @@ def _pick_templates(bank: list[dict], slot: str, module: str, count: int,
         return []
     priority = _SLOT_PRIORITY.get(slot, [])
     rng.shuffle(pool)
+    # 同一优先层内用随机顺序平摊，不再按难度降序硬排。
+    # 原因：原写法对 quota=1 的格子，难度最高的优先模板会永远独占名额，
+    # 导致同层低难度模板（如 ratio_meaning diff2、solid_volume/circle_sector diff3）
+    # 被饿死、永远落不了卷。改为随机后，1 个名额在 N 个同层候选间均匀轮转。
     pool.sort(key=lambda t: (
         0 if t["id"] not in seen else 1,
         0 if t["knowledge_id"] in priority else 1,
-        -(kn_map.get(t["knowledge_id"], {}).get("difficulty", 3)),
+        rng.random(),
     ))
     picked: list[dict] = []
     used_kn: set[str] = set()

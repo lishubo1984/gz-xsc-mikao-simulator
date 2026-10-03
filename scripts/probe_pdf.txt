@@ -1,5 +1,0 @@
-=== Playwright 中文 PDF 导出验证（本机浏览器通道，免下载内核）===
-  OK  Edge: probe_msedge.pdf size=254410 bytes
-  OK  Chrome: probe_chrome.pdf size=249437 bytes
-PASS 可用通道 2 个：Edge|254410, Chrome|249437
-EXIT=0

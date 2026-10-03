@@ -1,0 +1,263 @@
+// 广州小升初密考题库 · 第一轮扩充（W5）
+// 目标：① 补两个零覆盖知识点 chicken_rabbit / inclusion_exclusion（以 fill 落地，落入 layout 实际抽取组合）
+//       ② 补"零余量高频组合"：fraction_percent 填空、travel 填空、ratio_proportion 填空/判断、geometry 选择
+//       ③ 所有题目都落在 data/knowledge_graph.yaml 的 paper_layout 已声明抽取的 (module,slot) 组合内，
+//          避免生成卷子时永远是"死模板"。
+// 质量门禁同主库：lint_bank.py（静态）+ audit_bank.py 300 轮（动态）。
+[
+  // ---------- 分数与百分数应用 · 填空（原仅有 fp_unit_01 / fp_percent_01，零余量） ----------
+  {
+    "id": "exp_fp_unit_02",
+    "knowledge_id": "unit_one",
+    "slot": "fill",
+    "stem": "甲数是乙数的 [[{a}/{b}]]，已知甲数是 {c}，乙数是（　　）。",
+    "answer_expr": "Fraction({c} * {b}, {a})",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "choice", "from": [2, 3, 4, 5, 6]},
+      "b": {"type": "choice", "from": [3, 4, 5, 7, 8]},
+      "k": {"type": "choice", "from": [2, 3, 4, 5, 6]},
+      "c": {"type": "expr", "expr": "{k} * {a}"},
+      "ans": {"type": "expr", "expr": "{k} * {b}"}
+    },
+    "constraints": ["math.gcd({a}, {b}) == 1", "{a} < {b}"],
+    "solution": "这里单位一是乙数（未知），要用除法：乙数 = 甲数 ÷ [[{a}/{b}]] = {c} ÷ [[{a}/{b}]] = {c} × [[{b}/{a}]] = {ans}。因为甲数 {c} 是 a 的倍数，结果正好是整数 {ans}。求单位一用除法、求部分量用乘法，这是分百应用题的根基。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "exp_fp_percent_06",
+    "knowledge_id": "percent_word_problem",
+    "slot": "fill",
+    "stem": "六（1）班共有 {total} 人，今天有 {absent} 人请假，出勤率是（　　）%。",
+    "answer_expr": "round(({total} - {absent}) / {total} * 100, 1)",
+    "answer_display": "{ans}%",
+    "params": {
+      "total": {"type": "choice", "from": [40, 45, 50,48, 60]},
+      "absent": {"type": "choice", "from": [1, 2, 3, 4, 5]},
+      "present": {"type": "expr", "expr": "{total} - {absent}"}
+    },
+    "constraints": ["{absent} < {total}"],
+    "solution": "先算出实际出勤人数 = 全班人数 − 请假人数 = {total} − {absent} = {present} 人。出勤率 = 出勤人数 ÷ 全班人数 × 100% = {present} ÷ {total} × 100%。百分率表示两个数的比，结果不会超过 100%。",
+    "difficulty": 2,
+    "unit": "%"
+  },
+
+  // ---------- 行程 · 填空（原仅有 tv_basic_01，零余量） ----------
+  {
+    "id": "exp_tv_basic_02",
+    "knowledge_id": "travel_basic",
+    "slot": "fill",
+    "stem": "一列火车平均每小时行 {v} 千米，行了 {h} 小时，一共行驶了（　　）千米。",
+    "answer_expr": "{v} * {h}",
+    "answer_display": "{ans}",
+    "params": {
+      "v": {"type": "choice", "from": [60, 72, 84, 90, 108, 120]},
+      "h": {"type": "choice", "from": [2, 3, 4, 5]},
+      "dist": {"type": "expr", "expr": "{v} * {h}"}
+    },
+    "solution": "路程 = 速度 × 时间。这列火车每小时行 {v} 千米，行了 {h} 小时，总路程就是 {v} × {h} = {dist} 千米。遇到“一共行驶多少”先想三个量的关系：速度 × 时间 = 路程。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "exp_tv_basic_03",
+    "knowledge_id": "travel_basic",
+    "slot": "fill",
+    "stem": "甲、乙两地相距 {dist} 千米，一辆汽车平均每小时行 {v} 千米，需要（　　）小时到达。",
+    "answer_expr": "{dist} // {v}",
+    "answer_display": "{ans}",
+    "params": {
+      "v": {"type": "choice", "from": [40, 45, 50, 60, 75]},
+      "h": {"type": "choice", "from": [3, 4, 5, 6]},
+      "dist": {"type": "expr", "expr": "{v} * {h}"}
+    },
+    "solution": "时间 = 路程 ÷ 速度。全程 {dist} 千米，每小时行 {v} 千米，所需时间就是 {dist} ÷ {v} = {h} 小时。注意“需要几小时”是求时间，用除法而不是乘法。",
+    "difficulty": 2,
+    "unit": "小时"
+  },
+
+  // ---------- 比和比例 · 填空（原仅有 proportion_property / ratio_meaning 各 1，零余量） ----------
+  {
+    "id": "exp_rp_ratio_02",
+    "knowledge_id": "ratio_meaning",
+    "slot": "fill",
+    "stem": "把 {a} : {b} 化成最简整数比是（　　）。",
+    "answer_expr": "Fraction({a}, {b})",
+    "answer_display": "{sa}:{sb}",
+    "params": {
+      "a": {"type": "choice", "from": [6, 8, 9, 10, 12, 14]},
+      "b": {"type": "choice", "from": [4, 6, 8, 9, 10, 15]},
+      "g": {"type": "expr", "expr": "math.gcd({a}, {b})"},
+      "sa": {"type": "expr", "expr": "{a} // {g}"},
+      "sb": {"type": "expr", "expr": "{b} // {g}"}
+    },
+    "constraints": ["{a} != {b}", "{a} // {g} != 1 or {b} // {g} != 1"],
+    "solution": "化简比要用比的前项和后项同时除以它们的最大公因数。{a} 和 {b} 的最大公因数是 {g}，所以 {a} : {b} = ({a} ÷ {g}) : ({b} ÷ {g}) = {sa} : {sb}。化简比与求比值的区别：化简比结果仍是比（带冒号），求比值结果是一个数。",
+    "difficulty": 2,
+    "unit": null
+  },
+  {
+    "id": "exp_rp_dist_01",
+    "knowledge_id": "ratio_distribution",
+    "slot": "fill",
+    "stem": "把 {total} 千克糖按 {a} : {b} 的比分给甲、乙两班，甲班分得（　　）千克，乙班分得（　　）千克。",
+    "answer_expr": "Fraction({total} * {a}, {a} + {b})",
+    "answer_display": "{ans}；{yb}",
+    "params": {
+      "a": {"type": "choice", "from": [2, 3, 4]},
+      "b": {"type": "choice", "from": [3, 5, 7]},
+      "k": {"type": "choice", "from": [4, 5, 6, 8, 10]},
+      "total": {"type": "expr", "expr": "{k} * ({a} + {b})"},
+      "ans": {"type": "expr", "expr": "{k} * {a}"},
+      "yb": {"type": "expr", "expr": "{k} * {b}"},
+      "apb": {"type": "expr", "expr": "{a} + {b}"}
+    },
+    "constraints": ["{a} != {b}"],
+    "solution": "总份数 = a + b = {apb} 份，每份是 {total} ÷ {apb} = {k} 千克。甲班占 a 份得 {k} × a = {ans} 千克，乙班占 b 份得 {k} × b = {yb} 千克，两班相加正好 {total} 千克。按比例分配先求总份数，再求每份是多少。",
+    "difficulty": 3,
+    "unit": "千克"
+  },
+  {
+    "id": "exp_rp_judge_01",
+    "knowledge_id": "ratio_meaning",
+    "slot": "judge",
+    "stem": "比的前项和后项同时乘或除以同一个数（0 除外），比值不变。（　　）",
+    "answer_expr": "1",
+    "answer_display": "√",
+    "params": null,
+    "solution": "这是比的基本性质，和分数的基本性质、除法商不变规律是同一件事的不同说法：前项和后项同乘或同除以一个不为 0 的数，比值保持不变。这是化简比和解比例的理论依据。",
+    "difficulty": 2,
+    "unit": null
+  },
+
+  // ---------- 空间与图形 · 选择（原仅有 geometry_transform，零余量） ----------
+  {
+    "id": "exp_gm_solid_02",
+    "knowledge_id": "solid_volume",
+    "slot": "choice",
+    "stem": "一个长方体，长 {a} 厘米，宽 {b} 厘米，高 {c} 厘米，它的体积是（　　）立方厘米。",
+    "answer_expr": "{a} * {b} * {c}",
+    "answer_display": "{ans}",
+    "choices_expr": ["{ans}", "{w1}", "{w2}", "{w3}"],
+    "params": {
+      "a": {"type": "choice", "from": [4, 5, 6, 8]},
+      "b": {"type": "choice", "from": [3, 4, 5, 6]},
+      "c": {"type": "choice", "from": [2, 3, 4, 5]},
+      "vol": {"type": "expr", "expr": "{a} * {b} * {c}"}
+    },
+    "solution": "长方体体积 = 长 × 宽 × 高。代入数据：{a} × {b} × {c} = {vol} 立方厘米。体积要用三条棱相乘，单位是立方厘米；表面积才是先把六个面配对再相加。",
+    "difficulty": 3,
+    "unit": "立方厘米"
+  },
+
+  // ---------- 其他综合 · 填空：补两个零覆盖知识点（以 fill 落地，落入 misc 填空配额） ----------
+  {
+    "id": "exp_cr_fill_01",
+    "knowledge_id": "chicken_rabbit",
+    "slot": "fill",
+    "stem": "鸡兔同笼，共有头 {n} 个，脚 {f} 只。鸡有（　　）只，兔有（　　）只。",
+    "answer_expr": "{c}",
+    "answer_display": "{c}；{r}",
+    "params": {
+      "c": {"type": "choice", "from": [8, 10, 12, 15, 18, 20]},
+      "r": {"type": "choice", "from": [5, 6, 8, 10, 12]},
+      "n": {"type": "expr", "expr": "{c} + {r}"},
+      "f": {"type": "expr", "expr": "2 * {c} + 4 * {r}"},
+      "two_n": {"type": "expr", "expr": "2 * {n}"},
+      "diff": {"type": "expr", "expr": "{f} - 2 * {n}"}
+    },
+    "solution": "用假设法：假设笼中全是鸡，则应有 2 × {n} = {two_n} 只脚，比实际少 {f} − {two_n} = {diff} 只。每把一只鸡换成兔，脚数增加 2 只，所以兔有 {diff} ÷ 2 = {r} 只，鸡有 {n} − {r} = {c} 只。验证：{c} × 2 + {r} × 4 = {f} 只脚，正确。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "exp_cr_fill_02",
+    "knowledge_id": "chicken_rabbit",
+    "slot": "fill",
+    "stem": "停车场里有三轮车和小轿车共 {n} 辆，这些车一共有 {f} 个轮子。三轮车有（　　）辆，小轿车有（　　）辆。",
+    "answer_expr": "{t}",
+    "answer_display": "{t}；{s}",
+    "params": {
+      "t": {"type": "choice", "from": [6, 8, 10, 12]},
+      "s": {"type": "choice", "from": [4, 5, 6, 8]},
+      "n": {"type": "expr", "expr": "{t} + {s}"},
+      "f": {"type": "expr", "expr": "3 * {t} + 4 * {s}"},
+      "three_n": {"type": "expr", "expr": "3 * {n}"},
+      "diff": {"type": "expr", "expr": "{f} - 3 * {n}"}
+    },
+    "solution": "这是鸡兔同笼的变形（三轮车 3 个轮、小轿车 4 个轮）。假设全是三轮车，应有 3 × {n} = {three_n} 个轮子，比实际少 {f} − {three_n} = {diff} 个。每把一辆三轮车换成小轿车多 1 个轮子，所以小轿车有 {diff} 辆，三轮车有 {n} − {diff} = {t} 辆。",
+    "difficulty": 3,
+    "unit": null
+  },
+  {
+    "id": "exp_ie_fill_01",
+    "knowledge_id": "inclusion_exclusion",
+    "slot": "fill",
+    "stem": "六（2）班共有 {t} 人。其中会游泳的有 {a} 人，会骑自行车的有 {b} 人，两项都会的有 {c} 人。两项都不会的有（　　）人。",
+    "answer_expr": "{neither}",
+    "answer_display": "{ans}",
+    "params": {
+      "a": {"type": "choice", "from": [20, 22, 25, 28]},
+      "b": {"type": "choice", "from": [18, 20, 24, 26]},
+      "c": {"type": "choice", "from": [5, 8, 10, 12]},
+      "neither": {"type": "choice", "from": [2, 3, 4, 5]},
+      "ab": {"type": "expr", "expr": "{a} + {b} - {c}"},
+      "t": {"type": "expr", "expr": "{a} + {b} - {c} + {neither}"}
+    },
+    "constraints": ["{c} <= {a}", "{c} <= {b}"],
+    "solution": "至少会一项的人数 = 会游泳 + 会骑车 − 两项都会 = {a} + {b} − {c} = {ab} 人。全班 {t} 人减去至少会一项的，就是两项都不会的：{t} − {ab} = {neither} 人。容斥的关键是“重叠部分只算一次”，不能直接把 {a} 和 {b} 相加。",
+    "difficulty": 4,
+    "unit": "人"
+  },
+  {
+    "id": "exp_ie_fill_02",
+    "knowledge_id": "inclusion_exclusion",
+    "slot": "fill",
+    "stem": "某班订阅报刊，订《语文报》的 {a} 人，订《数学报》的 {b} 人，两份都订的 {c} 人。只订《语文报》的有（　　）人，只订《数学报》的有（　　）人。",
+    "answer_expr": "{a} - {c}",
+    "answer_display": "{oa}；{ob}",
+    "params": {
+      "a": {"type": "choice", "from": [25, 28, 30, 32]},
+      "b": {"type": "choice", "from": [22, 24, 26, 28]},
+      "c": {"type": "choice", "from": [6, 8, 10, 12]},
+      "oa": {"type": "expr", "expr": "{a} - {c}"},
+      "ob": {"type": "expr", "expr": "{b} - {c}"}
+    },
+    "constraints": ["{c} <= {a}", "{c} <= {b}"],
+    "solution": "订《语文报》的人里包含“两份都订”的，所以只订语文 = 订语文 − 两份都订 = {a} − {c} = {oa} 人；只订数学 = 订数学 − 两份都订 = {b} − {c} = {ob} 人。从“总数”里扣掉“重叠”就是“只属于一方”的部分，这是容斥原理的基本用法。",
+    "difficulty": 4,
+    "unit": null
+  },
+
+  // ---------- 数与代数 · 填空（补 prime_composite / estimation 的填空落地） ----------
+  {
+    "id": "exp_na_prime_02",
+    "knowledge_id": "prime_composite",
+    "slot": "fill",
+    "stem": "最小的质数是（　　），最小的合数是（　　）。",
+    "answer_expr": "2",
+    "answer_display": "2；4",
+    "params": null,
+    "solution": "质数是指大于 1 且只有 1 和它本身两个因数的数，最小的是 2（也是唯一的偶质数）；合数是指除了 1 和它本身还有别的因数的数，最小的是 4（2×2）。注意 1 既不是质数也不是合数。",
+    "difficulty": 1,
+    "unit": null
+  },
+  {
+    "id": "exp_na_est_02",
+    "knowledge_id": "estimation",
+    "slot": "fill",
+    "stem": "把 {n} 四舍五入到十位，约等于（　　）；四舍五入到百位，约等于（　　）。",
+    "answer_expr": "{tens}",
+    "answer_display": "{tens}；{huns}",
+    "params": {
+      "n": {"type": "choice", "from": [147, 234, 358, 472, 583, 691]},
+      "tens": {"type": "expr", "expr": "int(round({n}, -1))"},
+      "huns": {"type": "expr", "expr": "int(round({n}, -2))"}
+    },
+    "constraints": ["{n} % 10 != 0"],
+    "solution": "四舍五入到十位，看个位上的数：个位 ≥ 5 进 1，< 5 舍去；四舍五入到百位，看十位上的数。{n} 四舍五入到十位是 {tens}，到百位是 {huns}。估算时先确定近似到哪一位，再看它的下一位决定舍入。",
+    "difficulty": 2,
+    "unit": null
+  }
+]

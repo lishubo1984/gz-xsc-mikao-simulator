@@ -528,7 +528,7 @@ nodes:
     prereq: [column_calc]
     difficulty: 3
     frequency: mid
-    slots: [solve, extra]
+    slots: [fill, solve, extra]
     points:
       - 假设法
       - 用方程解
@@ -573,7 +573,7 @@ nodes:
     prereq: []
     difficulty: 4
     frequency: low
-    slots: [extra, choice]
+    slots: [fill, extra, choice]
     points:
       - 两个集合的容斥
       - 重叠人数的计算
